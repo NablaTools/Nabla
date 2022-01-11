@@ -12,7 +12,7 @@ The concept is quite simple, the Audio or MIDI recorded in a “Record Item” n
 
 Each “Playback Item” can have specific properties and settings, such as volume, pan or pitch automations, reverse mode, as well as specific effect chains, additionally, being able to create automations of effects and parameters of each track. In this way, it is possible to create more complex sessions than in a traditional looping system.
 
-<img src="https://i.imgur.com/wXdZ9nH.gif" width="799" height="455" style="-webkit-user-select: none; margin: auto;" class="jop-noMdConv">
+<img src="https://i.imgur.com/wXdZ9nH.gif" width="699" height="355" style="-webkit-user-select: none; margin: auto;" class="jop-noMdConv">
 
 ## Creating an arrangement:
 
