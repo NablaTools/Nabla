@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="Nabla Tools v3" commit="456943a93dcd093a6897ef9794ca7afcbd0cbcd8">
-  <category name="Nabla/Looper A">
+<index version="1" name="Nabla" commit="456943a93dcd093a6897ef9794ca7afcbd0cbcd8">
+  <category name="Looper A">
     <reapack name="Nabla Looper A.lua" type="script">
       <metadata>
         <link rel="website">https://www.nablatools.com</link>
@@ -36,7 +36,7 @@
         <link rel="website" href="http://jalovatt.github.io/scythe">Scythe Website</link>
         <link rel="donation">https://paypal.me/Lokasenna</link>
       </metadata>
-      <version name="3.0.0" author="Lokasenna" time="2020-02-09T20:53:02Z">
+      <version name="3.0.0" author="Lokasenna" time="2022-01-11T20:53:02Z">
         <changelog><![CDATA[Minor updates to documentation, dev options, and version checking]]></changelog>
         <source main="main" file="library/Scythe_Nabla library path.lua">https://github.com/NablaTools/Nabla/raw/main/library/Scythe_Nabla%20library%20path.lua</source>
         <source file="library/gui/config.lua">https://github.com/NablaTools/Nabla/raw/main/library/gui/config.lua</source>
