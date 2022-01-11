@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="Nabla Tools" commit="50fe6d1bb4b861688e4a6a8b96aad5fdc5ad4acd">
+<index version="1" name="Nabla Tools v3" commit="50fe6d1bb4b861688e4a6a8b96aad5fdc5ad4acd">
   <category name="Nabla/Looper A">
     <reapack name="Nabla Looper A.lua" type="script">
       <metadata>
