@@ -10,22 +10,22 @@ function reaperCMD(id)
 end
 --------------------------------------------------------------
 function GetIDByScriptName(scriptName);
-    if type(scriptName)~="string"then 
-    	error("expects a 'string', got "..type(scriptName),2) 
-    end;
-    local file = io.open(reaper.GetResourcePath()..'/reaper-kb.ini','r'); 
-    if not file then 
-    	return -1 
-    end;
-    local scrName = scriptName:gsub('Script:%s+',''):gsub("[%%%[%]%(%)%*%+%-%.%?%^%$]",function(s)return"%"..s;end);
-    for var in file:lines() do;
-			if string.match(var, scrName) then
-			  id = "_"..var:match(".-%s+.-%s+.-%s+(.-)%s"):gsub('"',""):gsub("'","")
-        return id
-			else
-			end
-		end;
-		return -1;
+  if type(scriptName)~="string"then 
+    error("expects a 'string', got "..type(scriptName),2) 
+  end;
+  local file = io.open(reaper.GetResourcePath()..'/reaper-kb.ini','r'); 
+  if not file then 
+    return -1 
+  end;
+  local scrName = scriptName:gsub('Script:%s+',''):gsub("[%%%[%]%(%)%*%+%-%.%?%^%$]",function(s)return"%"..s;end);
+  for var in file:lines() do;
+    if string.match(var, scrName) then
+      id = "_"..var:match(".-%s+.-%s+.-%s+(.-)%s"):gsub('"',""):gsub("'","")
+      return id
+    else
+    end
+  end;
+  return -1;
 end;
 --------------------------------------------------------------
 local scriptName = "Script: Nabla Fill to Main A.lua"
