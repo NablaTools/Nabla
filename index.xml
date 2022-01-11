@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="Nabla" commit="34e2d729ff7d8f3615a723e9bb3fcd3c3dbfe33a">
+<index version="1" name="Nabla" commit="b524ec5c08ecf33e46b934a926a28d6704799e98">
   <category name="Looper A">
     <reapack name="Nabla Looper A.lua" type="script">
       <metadata>
@@ -22,7 +22,7 @@
       </version>
     </reapack>
   </category>
-  <category name="Sycthe for Nabla">
+  <category name="Sycthe Nabla">
     <reapack name="Lokasenna_Scythe library v3 for NablaTools.lua" type="script" desc="Scythe library v3 for NablaTools">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
@@ -81,3 +81,4 @@
     </reapack>    
   </category>
 </index>
+
