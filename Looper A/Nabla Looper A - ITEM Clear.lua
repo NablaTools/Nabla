@@ -1,8 +1,16 @@
+--====================================================================== 
+--[[ 
+* ReaScript Name: Nabla Looper A - ITEM Clear
+* Version: 0.3
+* Author: Esteban Morales
+* Author URI: http://forum.cockos.com/member.php?u=105939 
+--]] 
+--======================================================================
 ------------------------------------------------------------------
--- debug
+-- Debug
 ------------------------------------------------------------------
 local console = 0
-local version = "0.2.14"
+local version = "0.3"
 
 function Msg(value, line)
 	if console == 1 then
@@ -17,6 +25,9 @@ end
 ------------------------------------------------------------------
 -- RECODE SCRIPT
 ------------------------------------------------------------------
+local info   = debug.getinfo(1,'S');
+script_path  = info.source:match[[^@?(.*[\/])[^\/]-$]]
+
 reaper.Main_OnCommand(reaper.NamedCommandLookup('_SWS_SAVETRACK'), 0)
 
 local match  = string.match
@@ -109,7 +120,7 @@ local function CreateTableAllItems()
 			local iLen        = reaper.GetMediaItemInfo_Value(cItem,"D_LENGTH")
 			local lenQN       = reaper.TimeMap2_timeToQN( proj, iLen ) * 960
 			local action        = GetItemAction(cItem)
-			local source 				= reaper.GetMediaItemTake_Source(cTake)
+			local source                     = reaper.GetMediaItemTake_Source(cTake)
 			local _, _, _, mode = reaper.PCM_Source_GetSectionInfo( source )
 
 			items[#items+1] = { 
@@ -180,7 +191,6 @@ function Main()
 		for j = 1, #items do
 
 			local v = items[j]
-
 
 			if not flags[v.cItem] then
 

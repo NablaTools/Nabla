@@ -1,3 +1,10 @@
+--====================================================================== 
+--[[ 
+* ReaScript Name: Nabla Looper A - Settings
+* Version: 0.3
+* Author: Esteban Morales
+* Author URI: http://forum.cockos.com/member.php?u=105939 
+--]] 
 --======================================================================
 console = 0
 function Msg(value, line)
@@ -16,43 +23,31 @@ local match     = string.match
 local floor     = math.floor
 
 function GetIDByScriptName(scriptName)
-
-	if type(scriptName)~="string"then 
-
-		error("expects a 'string', got "..type(scriptName),2) 
-
-	end;
-
-	local file = io.open(reaper.GetResourcePath()..'/reaper-kb.ini','r'); 
-
-	if not file then 
-		return -1 
-	end;
-
-	local scrName = gsub(gsub(scriptName, 'Script:%s+',''), "[%%%[%]%(%)%*%+%-%.%?%^%$]",function(s)return"%"..s;end);
-
-	for var in file:lines() do;
-
-		if match(var, scrName) then
-
-			id = "_"..gsub(gsub(match(var, ".-%s+.-%s+.-%s+(.-)%s"),'"',""), "'","")
-			return id
-
-		else
-
-		end
-
-	end;
-	return -1;
+  if type(scriptName)~="string"then 
+    error("expects a 'string', got "..type(scriptName),2) 
+  end;
+  local file = io.open(reaper.GetResourcePath()..'/reaper-kb.ini','r'); 
+  if not file then 
+    return -1 
+  end;
+  local scrName = gsub(gsub(scriptName, 'Script:%s+',''), "[%%%[%]%(%)%*%+%-%.%?%^%$]",function(s)return"%"..s;end);
+  for var in file:lines() do;
+    if match(var, scrName) then
+      id = "_"..gsub(gsub(match(var, ".-%s+.-%s+.-%s+(.-)%s"),'"',""), "'","")
+      return id
+    else
+      --
+    end
+  end;
+  return -1;
 end
 
 local libPathNabla = reaper.GetExtState("Scythe v3 for Nabla", "libPathNabla")
-
 if not libPathNabla or libPathNabla == "" then
 
-	local scriptName = "Script: Scythe_Nabla library path.lua"
-	local idbyscript = GetIDByScriptName(scriptName)
-	reaper.Main_OnCommand(reaper.NamedCommandLookup(idbyscript),0)
+  local scriptName = "Script: Scythe_Nabla library path.lua"
+  local idbyscript = GetIDByScriptName(scriptName)
+  reaper.Main_OnCommand(reaper.NamedCommandLookup(idbyscript),0)
 
 end
 ------------------------------------------------------------------
@@ -69,24 +64,24 @@ local vars = {
   {'recColor',    'REC_COLOR',    '1,0,0' }, 
   {'monColor',    'MON_COLOR',    '0,0,1' }, 
   {'tkMrkColor',  'TKMRK_COLOR',  '0,1,0' },
-  {'practiceMode','PRACTICE_MOD', 'false' },
+  {'practiceMode','PRACTICE_MODE', 'false' },
 }
 
 for i = 1, #vars do
 
-	local varName = vars[i][1]
-	local section = vars[i][2]
-	local value   = vars[i][3]
+  local varName = vars[i][1]
+  local section = vars[i][2]
+  local value   = vars[i][3]
 
-	_G[varName] = reaper.GetExtState( 'NABLA_LOOPER_ARRANGED', section )
+  _G[varName] = reaper.GetExtState( 'NABLA_LOOPER_A', section )
 
-	if _G[varName] == "" or _G[varName] == nil then
+  if _G[varName] == "" or _G[varName] == nil then
 
-		reaper.SetExtState( 'NABLA_LOOPER_ARRANGED', section, value, true )
+    reaper.SetExtState( 'NABLA_LOOPER_A', section, value, true )
 
-		_G[varName] = value
+    _G[varName] = value
 
-	end
+  end
 end
 
 local color     = {recColor:match("^([^,]+),([^,]+),([^,]+)$")}
@@ -142,39 +137,37 @@ end
 -- SET NEW COLORS
 ------------------------------------------------------------------
 local function GetItemAction(cItem)
-
-	local r, action     = reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '', false)
-
-	if r then 
-		return action 
-	else
-		old_action = ""
-		local r, isRec      = reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECORDING', '', false)
-		local r, isRecMute  = reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECMUTE', '', false)
-		local r, isMon      = reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_MON', '', false)
-		if isRec     == "1" then 
-			reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '1', true) 
-			reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECORDING', '', true)
-			old_action = "1"
-		else 
-			reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECORDING', '', true) 
-		end
-		if isRecMute == "1" then 
-			reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '2', true) 
-			reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECMUTE', '', true) 
-			old_action = "2"
-		else 
-			reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECMUTE', '', true) 
-		end
-		if isMon     == "1" then 
-			reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '3', true) 
-			reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_MON', '', true) 
-			old_action = "3"
-		else 
-			reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_MON', '', true) 
-		end
-		return old_action
-	end
+  local r, action     = reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '', false)
+  if r then 
+    return action 
+  else
+    old_action = ""
+    local r, isRec      = reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECORDING', '', false)
+    local r, isRecMute  = reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECMUTE', '', false)
+    local r, isMon      = reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_MON', '', false)
+    if isRec     == "1" then 
+      reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '1', true) 
+      reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECORDING', '', true)
+      old_action = "1"
+    else 
+      reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECORDING', '', true) 
+    end
+    if isRecMute == "1" then 
+      reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '2', true) 
+      reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECMUTE', '', true) 
+      old_action = "2"
+    else 
+      reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECMUTE', '', true) 
+    end
+    if isMon     == "1" then 
+      reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '3', true) 
+      reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_MON', '', true) 
+      old_action = "3"
+    else 
+      reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_MON', '', true) 
+    end
+    return old_action
+  end
 end
 
 function DelSetTakeMarker( action, cTake, rT, gT, bT, state )
@@ -182,39 +175,24 @@ function DelSetTakeMarker( action, cTake, rT, gT, bT, state )
   local startoffs = reaper.GetMediaItemTakeInfo_Value( cTake, 'D_STARTOFFS' )
   -- Set take marker
   if action == 'set' then
-
     for j=0, numTkMarkers-1 do
-
       local  _, name, _ = reaper.GetTakeMarker( cTake, j )
       if name == "Record" then
-
         reaper.DeleteTakeMarker( cTake, j )
-
-	  elseif name == "Monitor" then
-
-	  	reaper.DeleteTakeMarker( cTake, j )
-
+    elseif name == "Monitor" then
+      reaper.DeleteTakeMarker( cTake, j )
       end
-
     end
-
     reaper.SetTakeMarker( cTake, -1, state, startoffs, reaper.ColorToNative(rT, gT, bT )|0x1000000 )
-
   -- Del take marker
   elseif action == 'del' then
-
     for j=0, numTkMarkers-1 do
-
       local  _, name, _ = reaper.GetTakeMarker( cTake, j )
-
       if name == "Record" or name == "Monitor" then
         reaper.DeleteTakeMarker( cTake, j )
       end
-
     end
-
   end
-
 end
 
 function SetNewColors(mode, r, g, b, R, G, B, mR, mG, mB)
@@ -227,12 +205,10 @@ function SetNewColors(mode, r, g, b, R, G, B, mR, mG, mB)
     local cItem = reaper.GetMediaItem(proj, i)
     local cTake = reaper.GetMediaItemTake(cItem, 0)
     if not cTake then 
-    	goto next
+      goto next
     end
 
     local startoffs = reaper.GetMediaItemTakeInfo_Value( cTake, 'D_STARTOFFS' )
-    -- local _,state = reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECORDING', '', false)
-    -- local _,stateMon = reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_MON', '', false)
     local action = GetItemAction(cItem)
 
     if action == "1" then
@@ -253,24 +229,24 @@ function SetNewColors(mode, r, g, b, R, G, B, mR, mG, mB)
       end
       ------------------------------------------------------------------
 
-  	elseif action == "3" then
-  		local numTkMarkers =  reaper.GetNumTakeMarkers( cTake )
-  		------------------------------------------------------------------
-  		if mode == 1 then
-  		  -- Cahnge Item color and Remove take marker
-  		  reaper.SetMediaItemInfo_Value( cItem, 'I_CUSTOMCOLOR', reaper.ColorToNative(rM, gM, bM )|0x1000000 )
-  		  DelSetTakeMarker( 'del', cTake)
-  		elseif mode == 2 then
-  		  -- Change take marker and Remove item color
-  		  DelSetTakeMarker( 'set', cTake, rT, gT, bT, 'Monitor' )
-  		  reaper.SetMediaItemInfo_Value( cItem, 'I_CUSTOMCOLOR', 0 )
-  		elseif mode == 3 then
-  		  -- Change item and take colors
-  		  reaper.SetMediaItemInfo_Value( cItem, 'I_CUSTOMCOLOR', reaper.ColorToNative(rM, gM, bM )|0x1000000 )
-  		  DelSetTakeMarker( 'set', cTake, rT, gT, bT, 'Monitor' )
-  		end
-  		------------------------------------------------------------------
-  		
+    elseif action == "3" then
+      local numTkMarkers =  reaper.GetNumTakeMarkers( cTake )
+      ------------------------------------------------------------------
+      if mode == 1 then
+        -- Cahnge Item color and Remove take marker
+        reaper.SetMediaItemInfo_Value( cItem, 'I_CUSTOMCOLOR', reaper.ColorToNative(rM, gM, bM )|0x1000000 )
+        DelSetTakeMarker( 'del', cTake)
+      elseif mode == 2 then
+        -- Change take marker and Remove item color
+        DelSetTakeMarker( 'set', cTake, rT, gT, bT, 'Monitor' )
+        reaper.SetMediaItemInfo_Value( cItem, 'I_CUSTOMCOLOR', 0 )
+      elseif mode == 3 then
+        -- Change item and take colors
+        reaper.SetMediaItemInfo_Value( cItem, 'I_CUSTOMCOLOR', reaper.ColorToNative(rM, gM, bM )|0x1000000 )
+        DelSetTakeMarker( 'set', cTake, rT, gT, bT, 'Monitor' )
+      end
+      ------------------------------------------------------------------
+      
     end  
     ::next::
   end ---
@@ -296,7 +272,7 @@ reaper.Undo_BeginBlock()
   local newvars = { 
     {'safeMode',    'SAFE_MODE',    opts[1]                }, 
     {'preservePDC', 'PRESERVE_PDC', opts[2]                }, 
-    {'practiceMode','PRACTICE_MOD', opts[3]                },
+    {'practiceMode','PRACTICE_MODE', opts[3]               },
     {'startTime',   'START_TIME',   startTime              }, 
     {'bufferTime',  'BUFFER_TIME',  GUI.Val("buffer")      },
     {'performance', 'PERFORMANCE',  newMode                }, 
@@ -306,7 +282,7 @@ reaper.Undo_BeginBlock()
     {'tkMrkColor',  'TKMRK_COLOR',  newTkcolor[1]..","..newTkcolor[2]..","..newTkcolor[3]  },
   }
   for i=1, #newvars do
-    reaper.SetExtState( 'NABLA_LOOPER_ARRANGED', newvars[i][2], tostring(newvars[i][3]), true )
+    reaper.SetExtState( 'NABLA_LOOPER_A', newvars[i][2], tostring(newvars[i][3]), true )
   end
   SetNewColors(mode, newcolor[1], newcolor[2], newcolor[3], newTkcolor[1], newTkcolor[2], newTkcolor[3],newMonColor[1] ,newMonColor[2] ,newMonColor[3] )
   reaper.Undo_EndBlock("Set configurations", 0)
@@ -316,7 +292,7 @@ end
 -------- Window settings -----------
 ------------------------------------
 window = GUI.createWindow({
-  name = "Arranged Mode Settings",
+  name = "Looper A Settings",
   x = 0, y = 0, w = 222, h = 485,
   anchor = "mouse",
   corner = "C",
@@ -340,15 +316,6 @@ layer_3:addElements( GUI.createElements(
 
 local layer_2 = GUI.createLayer({name = "Layer_2", z = 2})
 layer_2:addElements( GUI.createElements(
-  
-  --    {
-  --   name = "frm_Divider",
-  --   type = "Frame",
-  --   x = 32,
-  --   y = 280,
-  --   w = 93,
-  --   h = 24,
-  -- },
   {
     name = "lab_header",
     type = "Label",
@@ -357,28 +324,12 @@ layer_2:addElements( GUI.createElements(
     w = 82,
     h = 20,
     font = 2,
-    --color = {mrkColor[1],mrkColor[2],mrkColor[3]},
     caption = "  Options  ",
   }
   
   ))
 local layer = GUI.createLayer({name = "Layer1"})
 layer:addElements( GUI.createElements(
-  -- {
-  --   name = "optFoods",
-  --   type = "Radio",
-  --   x = 32,
-  --   y = 32,
-  --   w = 160,
-  --   h = 80,
-  --   caption = "",
-  --   options = {"Performance Mode 1","Performance Mode 2" },
-  --   frame = false,
-
-  --   dir = "v",
-  --   swap = false,
-  --   --tooltip = "Well hey there!"
-  -- },
   {
     name = "chk_opts",
     type =  "Checklist",

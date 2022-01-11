@@ -1,11 +1,31 @@
+--====================================================================== 
+--[[ 
+* ReaScript Name: Nabla Looper A - ITEM Start Stop
+* Version: 0.3
+* Author: Esteban Morales
+* Author URI: http://forum.cockos.com/member.php?u=105939 
+--]] 
+--======================================================================
+console = 1
+title = 'Nabla Looper A - ITEM Start Stop.lua'
+version = "v.0.3.0"
 
 local info   = debug.getinfo(1,'S');
-script_path  = info.source:match[[^@?(.*[\/])[^\/]-$]]
+local script_path  = info.source:match[[^@?(.*[\/])[^\/]-$]]
 
+local function Msg(value, line)
+	if console == 1 then
+		reaper.ShowConsoleMsg(tostring(value))
+		if line == 0 then
+			reaper.ShowConsoleMsg("\n")
+		else
+			reaper.ShowConsoleMsg("\n-----\n")
+		end
+	end
+end
 ------------------------------------------------------------------
 -- IS PROJECT SAVED
 ------------------------------------------------------------------
-
 function IsProjectSaved()
   if reaper.GetOS() == "Win32" or reaper.GetOS() == "Win64" then separator = "\\" else separator = "/" end
   retval, project_path_name = reaper.EnumProjects(-1, "")
@@ -24,20 +44,6 @@ end
 
 saved, dir, sep = IsProjectSaved()
 
-version = "v.0.3.0"
-
-console = 1
-title = 'Nabla Looper A - Start Stop.lua'
-local function Msg(value, line)
-	if console == 1 then
-		reaper.ShowConsoleMsg(tostring(value))
-		if line == 0 then
-			reaper.ShowConsoleMsg("\n")
-		else
-			reaper.ShowConsoleMsg("\n-----\n")
-		end
-	end
-end
 ------------------------------------------------------------------
 -- SET ON TOGGLE COMMAND STATE
 ------------------------------------------------------------------
@@ -46,7 +52,7 @@ reaper.SetToggleCommandState( sec, cmd, 1 )
 reaper.RefreshToolbar2( sec, cmd )
 
 ------------------------------------------------------------------
--- DEFINE VARIABLES AND TABLES
+-- VARIABLES AND TABLES
 ------------------------------------------------------------------
 local format    = string.format
 local match     = string.match
@@ -171,7 +177,7 @@ local function CreateTableAllItems()
 			local trRecInput    = reaper.GetMediaTrackInfo_Value(cTrack, 'I_RECINPUT')
 			local trRecMode     = reaper.GetMediaTrackInfo_Value( cTrack, 'I_RECMODE' )
 			local itemLock      = reaper.GetMediaItemInfo_Value( cItem, 'C_LOCK')
-			local source 				= reaper.GetMediaItemTake_Source(cTake)
+			local source                             = reaper.GetMediaItemTake_Source(cTake)
 			local _, _, _, mode = reaper.PCM_Source_GetSectionInfo( source )
 			items[#items+1] = {
 				cItem        = cItem, 
@@ -228,26 +234,54 @@ local function AddToGroupItemsByNameTable(v)
 	end
 end
 
-local function AddToInsTable(v)
-	_G[ v.siPos ] = {}
-	for j = 1, #ins do
-		local m = items[j]
-		if m.action ~= "0" and m.action ~= "" then
-			if  v.iPos == m.iPos then
-				_G[ v.siPos ][ #_G[ v.siPos ] + 1 ] = { idx = j }
+local function AddToInsTable()
+	for i = 1, #ins do
+		local iPos  = ins[i].iPos
+		local siPos = ins[i].siPos
+		-- reaper.ShowConsoleMsg(v.."\n")
+		_G[ siPos ] = {}
+		for j = 1, #items do
+			if items[j].action ~= "0" and items[j].action ~= "" then
+				if iPos == items[j].iPos then
+					-- reaper.ShowConsoleMsg("Tabla ins: "..v.." "..j.."\n")
+					_G[ siPos ][ #_G[ siPos ] + 1 ] = { idx = j }
+				end
 			end
+		end
+	end
+
+	-- Debug Start Tables
+	for i = 1, #ins do
+		local siPos = ins[i].siPos
+	      -- Msg( "At start position: "..ins[i].iPos, 0 )
+		for j = 1, #_G[ siPos ] do
+			local index = items[ _G[siPos][j].idx ]
+		      -- Msg( "--> Arm: "..index.tkName, 0 )
 		end
 	end
 end
 
 local function AddToOutTable(v)
-	_G[ v.siEnd ] = {}
-	for j = 1, #items do
-		local m = items[j]
-		if m.action ~= "0" and m.action ~= "" then
-			if  v.iEnd == m.iEnd then
-				_G[ v.siEnd ][ #_G[ v.siEnd ] + 1 ] = { idx = j }
+	for i = 1, #out do
+		local iEnd  = out[i].iEnd
+		local siEnd = out[i].siEnd
+		-- reaper.ShowConsoleMsg(v.."\n")
+		_G[ siEnd ] = {}
+		for j = 1, #items do
+			if items[j].action ~= "0" and items[j].action ~= "" then
+				if iEnd == items[j].iEnd then
+					_G[ siEnd ][ #_G[ siEnd ] + 1 ] = { idx = j }
+				end
 			end
+		end
+	end
+	-- Debug Out Tables
+	for i = 1, #out do
+		local siEnd = out[i].siEnd
+		-- Msg( "At end position: "..out[i].iEnd, 0 )
+		for j = 1, #_G[ siEnd ] do
+			local index = items[ _G[siEnd][j].idx ]
+		      --  Msg( "--> Unarm: "..index.tkName, 0 )
 		end
 	end
 end
@@ -275,7 +309,7 @@ end
 local function MainTables()
 	for i = 1, #items do
 		local v = items[i]
-		if tonumber(v.action) > 0 then 
+		if v.action > '0' then 
 			if v.action ~= "3" then AddToRecordingItemsTable(i, v) end
 			AddToActionTracksTable(v)
 			AddToActionTimesTable(i, v)
@@ -289,56 +323,8 @@ local function MainTables()
 	table.sort(ins, function(a,b) return a.iPos < b.iPos end) 
 	table.sort(out, function(a,b) return a.iEnd < b.iEnd end) 
 	table.sort(recItems, function(a,b) return a.iPos < b.iPos end)
-	-------------------------
-	for i = 1, #ins do
-		local iPos  = ins[i].iPos
-		local siPos = ins[i].siPos
-		-- reaper.ShowConsoleMsg(v.."\n")
-		_G[ siPos ] = {}
-		for j = 1, #items do
-			if items[j].action ~= "0" and items[j].action ~= "" then
-				if iPos == items[j].iPos then
-					-- reaper.ShowConsoleMsg("Tabla ins: "..v.." "..j.."\n")
-					_G[ siPos ][ #_G[ siPos ] + 1 ] = { idx = j }
-				end
-			end
-		end
-	end
-
-	-- Debug Start Tables
-	for i = 1, #ins do
-		local siPos = ins[i].siPos
-		Msg( "At start position: "..ins[i].iPos, 0 )
-		for j = 1, #_G[ siPos ] do
-			local index = items[ _G[siPos][j].idx ]
-			Msg( "--> Arm: "..index.tkName, 0 )
-		end
-	end
-	-------------------------
-	-------------------------
-	for i = 1, #out do
-		local iEnd  = out[i].iEnd
-		local siEnd = out[i].siEnd
-		-- reaper.ShowConsoleMsg(v.."\n")
-		_G[ siEnd ] = {}
-		for j = 1, #items do
-			if items[j].action ~= "0" and items[j].action ~= "" then
-				if iEnd == items[j].iEnd then
-					_G[ siEnd ][ #_G[ siEnd ] + 1 ] = { idx = j }
-				end
-			end
-		end
-	end
-	-- Debug Out Tables
-	for i = 1, #out do
-		local siEnd = out[i].siEnd
-		Msg( "At end position: "..out[i].iEnd, 0 )
-		for j = 1, #_G[ siEnd ] do
-			local index = items[ _G[siEnd][j].idx ]
-			Msg( "--> Unarm: "..index.tkName, 0 )
-		end
-	end
-	---------------------------
+	AddToInsTable()
+	AddToOutTable()
 end
 
 local function SetActionTracksConfig()
@@ -347,7 +333,7 @@ local function SetActionTracksConfig()
 		if v.action == "1" then
 			if v.trRecMode >= 7 and v.trRecMode <= 9 or v.trRecMode == 16 then
 				reaper.SetMediaTrackInfo_Value( v.cTrack, 'I_RECMODE', 0 )
-			end	
+			end       
 			reaper.SetMediaTrackInfo_Value( v.cTrack, 'B_FREEMODE', 0 )
 			reaper.SetMediaTrackInfo_Value( v.cTrack, 'I_RECMONITEMS', 1 )
 			reaper.SetMediaTrackInfo_Value( v.cTrack , 'I_RECMON', 0 )
@@ -355,7 +341,7 @@ local function SetActionTracksConfig()
 		elseif v.action == '2' then
 			if v.trRecMode ~= 0 then
 				reaper.SetMediaTrackInfo_Value( v.cTrack, 'I_RECMODE', 0 )
-			end	
+			end       
 			reaper.SetMediaTrackInfo_Value( v.cTrack, 'B_FREEMODE', 0 )
 			reaper.SetMediaTrackInfo_Value( v.cTrack, 'I_RECMONITEMS', 1 )
 			reaper.SetMediaTrackInfo_Value( v.cTrack, 'I_RECARM', 0 )
@@ -645,7 +631,7 @@ local function errorHandler(errObject)
 	"Error: "..err.."\n\n"..
 	"Stack traceback:\n\t"..table.concat(stack, "\n\t", 2).."\n\n"..
 	"Nabla:      \t".. version .."\n"..
-	"Reaper:      \t"..reaper.GetAppversion().."\n"..
+	"Reaper:      \t"..reaper.GetAppVersion().."\n"..
 	"Platform:    \t"..reaper.GetOS()
 	)
 end
@@ -728,6 +714,7 @@ local function ArmTracksByGroupTimes( siPos )
 	for i = 1, #_G[ siPos ] do
 		reaper.Undo_BeginBlock()
 		local v = items[ _G[siPos][i].idx ]
+		reaper.SetMediaTrackInfo_Value( v.cTrack, 'I_RECMON', 0 )
 		reaper.SetMediaTrackInfo_Value( v.cTrack, 'I_RECARM', 1 )
 		if safeMode == 'true' then SetReaDelayTime( v.cTrack, v.iLen, v.trRecInput) end
 		reaper.Undo_EndBlock("Recording: "..v.tkName, -1)

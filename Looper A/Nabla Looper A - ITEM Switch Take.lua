@@ -1,3 +1,12 @@
+--====================================================================== 
+--[[ 
+* ReaScript Name: Nabla Looper A - ITEM Select Take
+* Version: 0.3
+* Author: Esteban Morales
+* Author URI: http://forum.cockos.com/member.php?u=105939 
+--]] 
+--======================================================================
+
 console = 0
 function Msg(value, line)
 	if console == 1 then
@@ -92,16 +101,11 @@ local function GetItemAction(cItem)
 end
 
 local function CreateTableAllItems()
-
 	local count = reaper.CountMediaItems( proj )
-
 	for i = 0, count - 1 do
-
 		local cItem       = reaper.GetMediaItem(proj, i)
 		local _, type         = GetItemType( cItem, true )
-
 		if type ~= "UNKNOW" and type ~= "RPP_PROJECT" and type ~= "VIDEO" and type ~= "CLICK" and type ~= "LTC" and type ~= "VIDEOEFFECT" then
-
 			local cTake       = reaper.GetMediaItemTake(cItem, 0)
 			local name        = reaper.GetTakeName( cTake )
 			local subTkName   = match(name, '(.-)%sTK:%d+$')
@@ -111,9 +115,8 @@ local function CreateTableAllItems()
 			local iLen        = reaper.GetMediaItemInfo_Value(cItem,"D_LENGTH")
 			local lenQN       = reaper.TimeMap2_timeToQN( proj, iLen ) * 960
 			local action        = GetItemAction(cItem)
-			local source 				= reaper.GetMediaItemTake_Source(cTake)
+			local source                     = reaper.GetMediaItemTake_Source(cTake)
 			local _, _, _, mode = reaper.PCM_Source_GetSectionInfo( source )
-
 			items[#items+1] = { 
 				cItem       = cItem, 
 				cTake       = cTake, 
@@ -126,58 +129,38 @@ local function CreateTableAllItems()
 				type        = type,
 				mode        = mode,
 			}
-
 		end
-
 	end
 end
 
 local function PropagateAudio(sTkName, oldSource, oldSoffs, oldLen, key)
-
 	reaper.Undo_BeginBlock()
-
 	for i = 1, #items do
-
 		local v = items[i]
-
 		if v.tkName == sTkName then
-
 			if v.iLock ~= 1 then
-
 				local r, iChunk = reaper.GetItemStateChunk(v.cItem, "", false)
-
-
-
 				if v.mode then
-
 					local new_chunk = gsub(iChunk, '<SOURCE%s+.->', "<SOURCE SECTION\n".."LENGTH "..oldLen.."\n".."STARTPOS "..oldSoffs.."\n".."MODE  ".."2".."\n".."<SOURCE WAVE\n".."FILE ".."\""..oldSource.."\"".."\n>\n", 1)
 					reaper.SetItemStateChunk(v.cItem, new_chunk, true) 
 					reaper.GetSetMediaItemTakeInfo_String( v.cTake, 'P_NAME', v.tkName.." TK:"..format("%d",key), true )
-
 				else
-
 					local new_chunk = gsub(iChunk, '<SOURCE%s+.->', "<SOURCE SECTION\n".."LENGTH "..oldLen.."\n".."STARTPOS "..oldSoffs.."\n".."<SOURCE WAVE\n".."FILE ".."\""..oldSource.."\"".."\n>\n", 1)
 					reaper.SetItemStateChunk(v.cItem, new_chunk, true)
 					reaper.GetSetMediaItemTakeInfo_String( v.cTake, 'P_NAME', v.tkName.." TK:"..format("%d",key), true )
-
 				end
 			end      
 		end
-
 	end
-
 	reaper.Undo_EndBlock("Propagate Audio", -1)
-
 end
 
 local function PropagateMIDI(tkName, source, key, cItem)
-
 	reaper.Undo_BeginBlock()
 	reaper.Main_OnCommand(41238, 0) -- Selection set: Save set #10
 	reaper.Main_OnCommand(reaper.NamedCommandLookup("_BR_SAVE_CURSOR_POS_SLOT_16"), 0) -- SWS/BR: Save edit cursor position, slot 16
 	reaper.SetOnlyTrackSelected(reaper.GetMediaItem_Track(cItem))
 	reaper.SelectAllMediaItems(proj, 0)
-
 	reaper.InsertMedia(source, 0)
 
 	local cItem = reaper.GetSelectedMediaItem(proj, 0)
@@ -187,24 +170,16 @@ local function PropagateMIDI(tkName, source, key, cItem)
 	reaper.DeleteTrackMediaItem( reaper.GetMediaItem_Track(cItem), cItem )
 
 	local new_chunk = match(storedChunk, '<SOURCE%s+.->[\r]-[%\n]')
-
 	for i = 1, #items do
-
 		local v = items[i]
-
 		if v.isLock ~= 1 then
-
 			if tkName == v.tkName then
-
 				local _, iChunk = reaper.GetItemStateChunk(v.cItem, '', true)
 				local setChunk = gsub(iChunk, '<SOURCE%s+.->', new_chunk, 1)
 				reaper.SetItemStateChunk(v.cItem, setChunk, true) 
 				reaper.GetSetMediaItemTakeInfo_String(v.cTake, 'P_NAME', tkName.." TK:"..format("%d", key), true )
-
 			end
-
 		end
-
 	end
 
 	reaper.Main_OnCommand(41248, 0) -- Selection set: Load set #10
@@ -214,50 +189,25 @@ local function PropagateMIDI(tkName, source, key, cItem)
 end
 
 local function GetNumForLoopTakes( cTake )
-
-	for i = 0, 500 do
-
+	for i = 0, 1000 do
 		retval, key, val = reaper.EnumProjExtState( 0, cTake, i )
-
 		if retval == false then return i+1 end
-
 		takes[i+1] = val
 		--reaper.ShowConsoleMsg(key.." -- "..val.."\n\n")
 	end
 end
 
 function drawMenu(x,y, str)
-
-	local API_JS = reaper.APIExists('JS_Window_GetFocus');
-	if API_JS then;
-		local Win = reaper.JS_Window_GetFocus();
-		if Win then;
-			reaper.JS_Window_SetOpacity(Win,'ALPHA',0);
-			reaper.JS_Window_Move(Win,-9999,-9999);
-			-- gfx.x,gfx.y = gfx.screentoclient(x,y);
-			gfx.x,gfx.y = reaper.JS_Window_ScreenToClient( Win, x, y )
-		end;
-	end;
-
 	local retval = gfx.showmenu(str)
-
 	if retval > 0 then
-
 		local _, key, str_val = reaper.EnumProjExtState( 0, sTkName, string.format("%.0f", retval-1 ) )
-
 		for substring in gmatch(str_val, '([^,]+)') do insert(tStrRec, substring) end
-
 		if tStrRec[4] == "AUDIO" then
-
 			PropagateAudio(tkName, tStrRec[1], tStrRec[2], tStrRec[3], key)
-
 		elseif tStrRec[4] == "MIDI" then
-
 			PropagateMIDI(tkName, tStrRec[1], key, cItem)
-
 		end
 	end
-
 end
 
 CreateTableAllItems()
@@ -271,14 +221,10 @@ gfx.init('Select take',150,30,0,x,y)
 
 local str = ''
 
-for i = 0, 500 do
-
+for i = 0, 1000 do
 	retval, key, val = reaper.EnumProjExtState( 0, sTkName, i )
-
-	if retval == false then  break end
-
+	if retval == false then break end
 	str = str.."|"..tkName.." - Take "..string.format("%d", key )
-
 end
 
 drawMenu(x,y,str)  

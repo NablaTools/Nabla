@@ -1,7 +1,7 @@
 --====================================================================== 
 --[[ 
-* ReaScript Name: Nabla Looper Arranged Settings. 
-* Version: 0.1.0
+* ReaScript Name: Nabla Looper A - ITEM Rename
+* Version: 0.3
 * Author: Esteban Morales
 * Author URI: http://forum.cockos.com/member.php?u=105939 
 --]] 
@@ -14,30 +14,20 @@ local insert    = table.insert
 local lower     = string.lower
 
 function GetIDByScriptName(scriptName)
-
 	if type(scriptName)~="string"then 
-
 		error("expects a 'string', got "..type(scriptName),2) 
-
 	end;
 
 	local file = io.open(reaper.GetResourcePath()..'/reaper-kb.ini','r'); 
-
 	if not file then 
 		return -1 
 	end;
 
 	local scrName = gsub(gsub(scriptName, 'Script:%s+',''), "[%%%[%]%(%)%*%+%-%.%?%^%$]",function(s)return"%"..s;end);
-
 	for var in file:lines() do;
-
 		if match(var, scrName) then
-
 			id = "_"..gsub(gsub(match(var, ".-%s+.-%s+.-%s+(.-)%s"),'"',""), "'","")
 			return id
-
-		else
-
 		end
 
 	end;
@@ -45,9 +35,7 @@ function GetIDByScriptName(scriptName)
 end
 
 local libPathNabla = reaper.GetExtState("Scythe v3 for Nabla", "libPathNabla")
-
 if not libPathNabla or libPathNabla == "" then
-
 	local scriptName = "Script: Scythe_Nabla library path.lua"
 	local idbyscript = GetIDByScriptName(scriptName)
 	reaper.Main_OnCommand(reaper.NamedCommandLookup(idbyscript),0)
@@ -68,19 +56,13 @@ local vars = {
 }
 
 for i = 1, #vars do
-
 	local varName = vars[i][1]
 	local section = vars[i][2]
 	local value   = vars[i][3]
-
 	_G[varName] = reaper.GetExtState( 'NABLA_LOOPER_ARRANGED', section )
-
 	if _G[varName] == "" or _G[varName] == nil then
-
 		reaper.SetExtState( 'NABLA_LOOPER_ARRANGED', section, value, true )
-
 		_G[varName] = value
-
 	end
 end
 ------------------------------------------------------------------
@@ -107,22 +89,16 @@ local name_exist = {}
 local val_exist = {}
 
 local retval = reaper.GetExtState( 'NABLA_PRESETS', 'PRESETS', "Loop" )
-
 if retval == "" then
 	reaper.SetExtState('NABLA_PRESETS', 'PRESETS', 'Loop', true)
 	reaper.SetExtState('NABLA_PRESETS', 'NUMLIST', '20', true)
 end
 
 function AddPreset( ... )
-
 	Scythe.quit = true
-	
 	retval, str = reaper.GetUserInputs("Add new preset", 2, "New preset name: , # Items in the list:, ?extrawidth=100", "New Name , 10")
-
 	if retval == false then return end
-
 	for substring in gmatch(str, '([^,]+)') do insert(val_set_new, substring) end
-
 
 	local str_presets = reaper.GetExtState('NABLA_PRESETS', 'PRESETS')
 	local str_list = reaper.GetExtState('NABLA_PRESETS', 'NUMLIST')
@@ -132,112 +108,68 @@ function AddPreset( ... )
 	for substring in gmatch(str_list, '([^,]+)') do insert(val_exist, substring) end
 
 	for i = 1 , #name_exist do
-
-		--if name_exist[i] ~= nil then
-
-			if lower( name_exist[i] ) == lower( val_set_new[1] ) then
-
-				name_exist[i] = val_set_new[1]
-				val_exist[i]  = val_set_new[2]
-
-				strpresets = table.concat(name_exist, ",")
-				strlist    = table.concat(val_exist, ",")
-
-				reaper.SetExtState('NABLA_PRESETS', 'PRESETS', strpresets, true)
-				reaper.SetExtState('NABLA_PRESETS', 'NUMLIST', strlist, true)
-
+		if lower( name_exist[i] ) == lower( val_set_new[1] ) then
+			name_exist[i] = val_set_new[1]
+			val_exist[i]  = val_set_new[2]
+			strpresets = table.concat(name_exist, ",")
+			strlist    = table.concat(val_exist, ",")
+			reaper.SetExtState('NABLA_PRESETS', 'PRESETS', strpresets, true)
+			reaper.SetExtState('NABLA_PRESETS', 'NUMLIST', strlist, true)
+			val_set_new[1] = nil
+			val_set_new[2] = nil
+			return
+		else
+			if i == #name_exist then
+				reaper.SetExtState('NABLA_PRESETS', 'PRESETS', str_presets .. "," .. val_set_new[1], true)
+				reaper.SetExtState('NABLA_PRESETS', 'NUMLIST', str_list .. "," .. val_set_new[2], true)
 				val_set_new[1] = nil
 				val_set_new[2] = nil
-
 				return
-
-			else
-
-				if i == #name_exist then
-
-					reaper.SetExtState('NABLA_PRESETS', 'PRESETS', str_presets .. "," .. val_set_new[1], true)
-					reaper.SetExtState('NABLA_PRESETS', 'NUMLIST', str_list .. "," .. val_set_new[2], true)
-
-					val_set_new[1] = nil
-					val_set_new[2] = nil
-
-					return
-				end
-
 			end
-
-		--end
-
+		end
 	end
-
 end
 
 function DeletePreset( ... )
-
 	Scythe.quit = true
-	
 	retval, str = reaper.GetUserInputs("Delete preset", 1, "Preset name to delete: , ?extrawidth=100", "Name")
-
 	if retval == false then return end
-
 	for substring in gmatch(str, '([^,]+)') do insert(val_set_new, substring) end
-
 
 	local str_presets = reaper.GetExtState('NABLA_PRESETS', 'PRESETS')
 	local str_list = reaper.GetExtState('NABLA_PRESETS', 'NUMLIST')
-	-- if str_presets == "" or str_list == "" then return end
 
 	for substring in gmatch(str_presets, '([^,]+)') do insert(name_exist, substring) end
 	for substring in gmatch(str_list, '([^,]+)') do insert(val_exist, substring) end
 
 	for i = 1 , #name_exist do
-
-
 		if name_exist[i] ~= nil then
-
 			if lower( name_exist[i] ) == lower( val_set_new[1] ) and lower( name_exist[i] ) ~= "loop" then
-
 				name_exist[i] = ""
 				val_exist[i]  = ""
-
 				str_presets = table.concat(name_exist, ",")
 				str_list    = table.concat(val_exist, ",")
-
 				reaper.SetExtState('NABLA_PRESETS', 'PRESETS', str_presets, true)
 				reaper.SetExtState('NABLA_PRESETS', 'NUMLIST', str_list, true)
-
-				-- val_set_new[1] = nil
-				-- val_set_new[2] = nil
-
 				return
-
-			else
-
-				--
-				
 			end
-
 		end
-
 	end
-
 end
 
 
+local val = reaper.GetExtState('NABLA_PRESETS', 'PRESETS')
+local str_list = reaper.GetExtState('NABLA_PRESETS', 'NUMLIST')
 
+for substring in gmatch(val, '([^,]+)') do insert(value, substring) end
+for i = 1, #value do
+	presets[i] = value[i]
+end
 
-	local val = reaper.GetExtState('NABLA_PRESETS', 'PRESETS')
-	local str_list = reaper.GetExtState('NABLA_PRESETS', 'NUMLIST')
-
-	for substring in gmatch(val, '([^,]+)') do insert(value, substring) end
-	for i = 1, #value do
-		presets[i] = value[i]
-	end
-
-	for substring in gmatch(str_list, '([^,]+)') do insert(val_list, substring) end
-	for i = 1, #val_list do
-		numlist[i] = tonumber(val_list[i])
-	end
+for substring in gmatch(str_list, '([^,]+)') do insert(val_list, substring) end
+for i = 1, #val_list do
+	numlist[i] = tonumber(val_list[i])
+end
 
 
 set_new_name = function(self, str)
@@ -270,23 +202,14 @@ menus = {
 }
 
 for i=1, #presets do
-	
 	local var_caption = presets[i]
-	
 	insert(menus[1].options, {caption = ">"..var_caption})
-	
 	for j=1, tonumber(numlist[i]) do
-		
 		if j < tonumber(numlist[i]) then
-			
 			insert(menus[1].options, {caption = var_caption.." "..j, func = set_new_name, params = {var_caption.." "..j}})
-			
 		else
-			
 			insert(menus[1].options, {caption = "<"..var_caption.." "..j, func = set_new_name, params = {var_caption.." "..j}})
-			
 		end
-
 	end
 
 	if i == #presets then

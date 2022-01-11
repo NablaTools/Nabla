@@ -1,11 +1,11 @@
 --====================================================================== 
 --[[ 
-* ReaScript Name: Nabla Looper Arranged Toggle Record Items. 
-* Version: 0.1.0
+* ReaScript Name: Nabla Looper A - ITEM Toggle Record Mute
+* Version: 0.3
 * Author: Esteban Morales
 * Author URI: http://forum.cockos.com/member.php?u=105939 
 --]] 
---====================================================================== 
+--======================================================================
 ------------------------------------------------------------------
 -- GET/SET CONFIGURATIONS
 ------------------------------------------------------------------
@@ -34,7 +34,7 @@ for i=0, sItems-1 do
   local cItem = reaper.GetSelectedMediaItem(0, i)
   local cTake = reaper.GetMediaItemTake(cItem, 0)
   if not cTake then
-  	goto next
+    goto next
   end
   local r,action = reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '', false)
   if action == "2" then
@@ -52,16 +52,16 @@ for i=0, sItems-1 do
     end
     reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '0', true)
   else
-  	local numTkMarkers =  reaper.GetNumTakeMarkers( cTake )
-  	for j=0, numTkMarkers-1 do
+    local numTkMarkers =  reaper.GetNumTakeMarkers( cTake )
+    for j=0, numTkMarkers-1 do
 
-  		local  retval, name, color = reaper.GetTakeMarker( cTake, j )
+      local  retval, name, color = reaper.GetTakeMarker( cTake, j )
 
-  		if name == "Monitor" or name == "Record" then
-  			reaper.DeleteTakeMarker( cTake, j )
-  		end
+      if name == "Monitor" or name == "Record" then
+        reaper.DeleteTakeMarker( cTake, j )
+      end
 
-  	end
+    end
     if recordFdbk == '1' or recordFdbk == '3' then
       local tColor = {match(recColor, "^([^,]+),([^,]+),([^,]+)$")}
       local r,g,b = tonumber(tColor[1])*255, tonumber(tColor[2])*255, tonumber(tColor[3])*255
@@ -73,9 +73,7 @@ for i=0, sItems-1 do
       local startoffs = reaper.GetMediaItemTakeInfo_Value( cTake, 'D_STARTOFFS' )
       reaper.SetTakeMarker( cTake, -1, 'Rec Mute', startoffs, reaper.ColorToNative(floor(r+0.5), floor(g+0.5), floor(b+0.5))|0x1000000 )
     end
-    -- reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_MON', '0', true)
-    -- reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECORDING', '0', true)
-    -- reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_RECMUTE', '1', true)
+
     reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '2', true)
   end  
   ::next::
