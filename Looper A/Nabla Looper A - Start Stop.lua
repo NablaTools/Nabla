@@ -1,62 +1,16 @@
 --====================================================================== 
 --[[ 
 * ReaScript Name: Nabla Looper A - ITEM Start Stop
-* Version: 0.3
+* Version: 0.3.0
 * Author: Esteban Morales
 * Author URI: http://forum.cockos.com/member.php?u=105939 
 --]] 
 --======================================================================
-console = 1
-title = 'Nabla Looper A - ITEM Start Stop.lua'
-version = "v.0.3.0"
-
+local console = 0
+local title = 'Nabla Looper A - ITEM Start Stop.lua'
+local version = "v.0.3.0"
 local info   = debug.getinfo(1,'S');
 local script_path  = info.source:match[[^@?(.*[\/])[^\/]-$]]
-
-local function Msg(value, line)
-	if console == 1 then
-		reaper.ShowConsoleMsg(tostring(value))
-		if line == 0 then
-			reaper.ShowConsoleMsg("\n")
-		else
-			reaper.ShowConsoleMsg("\n-----\n")
-		end
-	end
-end
-------------------------------------------------------------------
--- IS PROJECT SAVED
-------------------------------------------------------------------
-function IsProjectSaved()
-	if reaper.GetOS() == "Win32" or reaper.GetOS() == "Win64" then separator = "\\" else separator = "/" end
-	retval, project_path_name = reaper.EnumProjects(-1, "")
-	if project_path_name ~= "" then
-		dir = project_path_name:match("(.*"..separator..")")
-		project_saved = true
-		return project_saved, dir, separator
-	else
-		display = reaper.ShowMessageBox("You need to save the project to execute Nabla Looper.", "File Export", 1)
-		if display == 1 then
-			reaper.Main_OnCommand(40022, 0) -- SAVE AS PROJECT
-			return IsProjectSaved()
-		end
-	end
-end
-
-saved, dir, sep = IsProjectSaved()
-
-------------------------------------------------------------------
--- SET ON TOGGLE COMMAND STATE
-------------------------------------------------------------------
-local function setActionState(state)
-	local _, _, sec, cmd, _, _, _ = reaper.get_action_context()
-	reaper.SetToggleCommandState( sec, cmd, state )
-	reaper.RefreshToolbar2( sec, cmd )
-end
-
-setActionState(1)
-------------------------------------------------------------------
--- VARIABLES AND TABLES
-------------------------------------------------------------------
 local format    = string.format
 local match     = string.match
 local gsub      = string.gsub
@@ -74,9 +28,62 @@ local practice   = {}
 local originalConfigs = {}
 local recItems   = {}
 local selected = false -- new notes are selected
-------------------------------------------------------------------
--- GET/SET EXT STATES
-------------------------------------------------------------------
+
+local function msg(value, line)
+	if console == 1 then
+		reaper.ShowConsoleMsg(tostring(value))
+		if line == 0 then
+			reaper.ShowConsoleMsg("\n")
+		else
+			reaper.ShowConsoleMsg("\n-----\n")
+		end
+	end
+end
+
+local function IsProjectSaved()
+	if reaper.GetOS() == "Win32" or reaper.GetOS() == "Win64" then separator = "\\" else separator = "/" end
+	retval, project_path_name = reaper.EnumProjects(-1, "")
+	if project_path_name ~= "" then
+		dir = project_path_name:match("(.*"..separator..")")
+		project_saved = true
+		return project_saved, dir, separator
+	else
+		display = reaper.ShowMessageBox("You need to save the project to execute Nabla Looper.", "File Export", 1)
+		if display == 1 then
+			reaper.Main_OnCommand(40022, 0) -- SAVE AS PROJECT
+			return IsProjectSaved()
+		end
+	end
+end
+
+local function errorHandler(errObject)
+	reaper.OnStopButton()
+	local byLine = "([^\r\n]*)\r?\n?"
+	local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
+	local err = errObject   and string.match(errObject, trimPath)
+	or  "Couldn't get error message."
+	local trace = debug.traceback()
+	local stack = {}
+	for line in string.gmatch(trace, byLine) do
+		local str = string.match(line, trimPath) or line
+		stack[#stack + 1] = str
+	end
+	table.remove(stack, 1)
+	reaper.ShowConsoleMsg(
+		"Error: "..err.."\n\n"..
+		"Stack traceback:\n\t"..table.concat(stack, "\n\t", 2).."\n\n"..
+		"Nabla:      \t".. version .."\n"..
+		"Reaper:      \t"..reaper.GetAppVersion().."\n"..
+		"Platform:    \t"..reaper.GetOS()
+		)
+end
+
+local function setActionState(state)
+	local _, _, sec, cmd, _, _, _ = reaper.get_action_context()
+	reaper.SetToggleCommandState( sec, cmd, state )
+	reaper.RefreshToolbar2( sec, cmd )
+end
+
 local function GetSetNablaConfigs()
 	local vars = { 
 		{'safeMode',    'SAFE_MODE',    'true'  }, 
@@ -102,12 +109,11 @@ local function GetSetNablaConfigs()
 	end
 end
 
-local function GetItemType( item, getsectiontype ) -- MediaItem* item, boolean* getsectiontype
+local function GetItemType( item, getsectiontype )
 	local take   = reaper.GetActiveTake(item)
 	if not take then return false, "UNKNOW" end
 	local source = reaper.GetMediaItemTake_Source(take)
 	local sourceType = reaper.GetMediaSourceType(source, "")
-	-- Return: boolean isSection, if getsectiontype then return string SECTION TYPE, if not then return "SECTION".
 	if sourceType ~= "SECTION" then
 		return false, sourceType
 	else
@@ -133,9 +139,6 @@ local function GetItemAction(codeItem)
 	end
 end
 
-------------------------------------------------------------------
--- TABLA ALL ITEMS
-------------------------------------------------------------------
 local function CreateTableAllItems()
 	local count = reaper.CountMediaItems(proj)
 	for i = 0, count - 1 do
@@ -188,10 +191,6 @@ local function CreateTableAllItems()
 	table.sort(items, function(a,b) return a.itemStart < b.itemStart end) 
 end
 
-------------------------------------------------------------------
--- SET BUFFER, CREATE TABLE TRIGGERS, SET RECORD TRACK CONFIGS
-------------------------------------------------------------------
-
 local function AddToRecordingItemsTable(i, v)
 	recItems[#recItems+1] = {idx = i, itemStart = v.itemStart, itemEnd = v.itemEnd}
 end
@@ -231,10 +230,10 @@ local function AddToStartTimesTable()
 	-- Debug startTimes Tables
 	for i = 1, #startTimes do
 		local itemStartStr = startTimes[i].itemStartStr
-		Msg( "At start position: "..startTimes[i].itemStart, 0 )
+		msg( "At start position: "..startTimes[i].itemStart, 0 )
 		for j = 1, #_G[ itemStartStr ] do
 			local index = items[ _G[itemStartStr][j].idx ]
-			Msg( "--> Arm: "..index.tkName, 0 )
+			msg( "--> Arm: "..index.tkName, 0 )
 		end
 	end
 end
@@ -255,10 +254,10 @@ local function AddToEndTimesTable(v)
 	-- Debug endTimes Tables
 	for i = 1, #endTimes do
 		local itemEndStr = endTimes[i].itemEndStr
-		Msg( "At end position: "..endTimes[i].itemEnd, 0 )
+		msg( "At end position: "..endTimes[i].itemEnd, 0 )
 		for j = 1, #_G[ itemEndStr ] do
 			local index = items[ _G[itemEndStr][j].idx ]
-			Msg( "--> Unarm: "..index.tkName, 0 )
+			msg( "--> Unarm: "..index.tkName, 0 )
 		end
 	end
 end
@@ -341,9 +340,6 @@ local function SetActionTracksConfig()
 	end
 end
 
-----------------------------------------------------------------
--- SET/RESTORE REAPER DAW CONFIGS
-------------------------------------------------------------------
 local function SetReaperConfigs()
 	local tActions = {
 		{ action = 40036, setstate = "on" }, -- View: Toggle auto-view-scroll during playback
@@ -583,27 +579,6 @@ local function AtExitActions()
 	reaper.Undo_EndBlock("--> END ARRANGED MODE", -1)
 end
 
-local function errorHandler(errObject)
-	reaper.OnStopButton()
-	local byLine = "([^\r\n]*)\r?\n?"
-	local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
-	local err = errObject   and string.match(errObject, trimPath)
-	or  "Couldn't get error message."
-	local trace = debug.traceback()
-	local stack = {}
-	for line in string.gmatch(trace, byLine) do
-		local str = string.match(line, trimPath) or line
-		stack[#stack + 1] = str
-	end
-	table.remove(stack, 1)
-	reaper.ShowConsoleMsg(
-		"Error: "..err.."\n\n"..
-		"Stack traceback:\n\t"..table.concat(stack, "\n\t", 2).."\n\n"..
-		"Nabla:      \t".. version .."\n"..
-		"Reaper:      \t"..reaper.GetAppVersion().."\n"..
-		"Platform:    \t"..reaper.GetOS()
-		)
-end
 
 local function SetReaDelayTime(codeTrack, itemLength, trRecInput)
 	reaper.TrackFX_SetParam( codeTrack, reaper.TrackFX_AddByName( codeTrack, 'Nabla ReaDelay', false, 0 ), 4, (reaper.TimeMap_timeToQN_abs( 0, itemLength )*2)/256 )
@@ -910,51 +885,53 @@ local function DeactivateMonitor()
 				end
 			end
 		end
-		------------------------------------------------------------------
 		if reaper.GetPlayState() == 0 then return else reaper.defer(DeactivateMonitor) end
 	end, errorHandler) 
 end
 
-local function Main()
-	local pState = reaper.GetPlayState()
-	if pState ~= 5 then
-		CreateTableAllItems()
-		CreateActionsTables()
-		SetActionTracksConfig()
-		GetSetNablaConfigs()
-		SetReaperConfigs()
-		SetPDC( preservePDC )
-		if safeMode == "true" then xpcall( InsertReaDelay, errorHandler) end
-		------------------------------------------------------------------
-		for i = 1, #startTimes do
-			local itemStart  = startTimes[i].itemStart
-			if itemStart - 0.1 > reaper.GetCursorPosition() then
-				idxStart         = i
-				idxStartMonMIDI  = i
-				idxStartMonAUDIO = i
-				break
-			end
+local function setIdxSatart()
+	for i = 1, #startTimes do
+		local itemStart  = startTimes[i].itemStart
+		if itemStart - 0.1 > reaper.GetCursorPosition() then
+			idxStart         = i
+			idxStartMonMIDI  = i
+			idxStartMonAUDIO = i
+			break
 		end
-		------------------------------------------------------------------
-		for i = 1, #endTimes do
-			local itemEnd  = endTimes[i].itemEnd
-			if itemEnd - 0.1 > reaper.GetCursorPosition() then
-				idxEnd    = i
-				idxEndMon = i
-				break
-			end
-		end
-		reaper.Main_OnCommand(40252, 0)
-		reaper.CSurf_OnRecord()
-		-- Start Defer Functions --
-		ActivateRecording()
-		ActivateMonitorMIDI()
-		ActivateMonitorAUDIO()
-		DeactivateMonitor()
-		DeactivateRecording()
-		WaitForEnd()
 	end
 end
 
-Main()
+local function setIdxEnd()
+	for i = 1, #endTimes do
+		local itemEnd  = endTimes[i].itemEnd
+		if itemEnd - 0.1 > reaper.GetCursorPosition() then
+			idxEnd    = i
+			idxEndMon = i
+			break
+		end
+	end
+end
+
+saved, dir, sep = IsProjectSaved()
+setActionState(1)
+if reaper.GetPlayState() ~= 5 then
+	CreateTableAllItems()
+	CreateActionsTables()
+	SetActionTracksConfig()
+	GetSetNablaConfigs()
+	SetReaperConfigs()
+	SetPDC( preservePDC )
+	if safeMode == "true" then xpcall( InsertReaDelay, errorHandler) end
+	setIdxSatart()
+	setIdxEnd()
+	reaper.Main_OnCommand(40252, 0)
+	reaper.CSurf_OnRecord()
+	-- Defer Functions --
+	ActivateRecording()
+	ActivateMonitorMIDI()
+	ActivateMonitorAUDIO()
+	DeactivateMonitor()
+	DeactivateRecording()
+	WaitForEnd()
+end
 reaper.atexit(AtExitActions)
