@@ -7,9 +7,9 @@
 --]] 
 --======================================================================
 local console = 0
-local version = "0.3"
+local version = "0.3.0"
 
-function Msg(value, line)
+function msg(value, line)
 	if console == 1 then
 		reaper.ShowConsoleMsg(tostring(value))
 		if line == 0 then
@@ -38,17 +38,17 @@ local function GetItemType( item, getsectiontype )
 	local take   = reaper.GetActiveTake(item)
 	if not take then return false, "UNKNOW" end
 	local source = reaper.GetMediaItemTake_Source(take)
-	local type   = reaper.GetMediaSourceType(source, "")
-	if type ~= "SECTION" then
-		return false, type
+	local itemType   = reaper.GetMediaSourceType(source, "")
+	if itemType ~= "SECTION" then
+		return false, itemType
 	else
 		if not getsectiontype then
-			return true, type
+			return true, itemType
 		else
 			local r, chunk     = reaper.GetItemStateChunk(item, "", false)
-			for type in  gmatch(chunk, '<SOURCE%s+(.-)[\r]-[%\n]') do
-				if type ~= "SECTION" then
-					return true, type
+			for itemType in  gmatch(chunk, '<SOURCE%s+(.-)[\r]-[%\n]') do
+				if itemType ~= "SECTION" then
+					return true, itemType
 				end
 			end
 		end
@@ -67,33 +67,31 @@ end
 local function CreateTableAllItems()
 	local count = reaper.CountMediaItems( proj )
 	for i = 0, count - 1 do
-		local cItem       = reaper.GetMediaItem(proj, i)
-		local _, type         = GetItemType( cItem, true )
-		if type ~= "UNKNOW" and type ~= "RPP_PROJECT" and type ~= "VIDEO" and type ~= "CLICK" and type ~= "LTC" and type ~= "VIDEOEFFECT" then
-			local cTake       = reaper.GetMediaItemTake(cItem, 0)
-			local name        = reaper.GetTakeName( cTake )
-			local subTkName   = match(name, '(.-)%sTK:%d+$')
-			local tkName      = subTkName or name
-			local iLock       = reaper.GetMediaItemInfo_Value(cItem,"C_LOCK")
-			local iLen        = reaper.GetMediaItemInfo_Value(cItem,"D_LENGTH")
+		local codeItem       = reaper.GetMediaItem(proj, i)
+		local _, itemType    = GetItemType( codeItem, true )
+		if itemType ~= "UNKNOW" and itemType ~= "RPP_PROJECT" and itemType ~= "VIDEO" and itemType ~= "CLICK" and itemType ~= "LTC" and itemType ~= "VIDEOEFFECT" then
+			local codeTake    = reaper.GetMediaItemTake(codeItem, 0)
+			local takeName        = match(reaper.GetTakeName(codeTake), '(.-)%sTK:%d+$') or reaper.GetTakeName(codeTake)
+			local iLock       = reaper.GetMediaItemInfo_Value(codeItem,"C_LOCK")
+			local iLen        = reaper.GetMediaItemInfo_Value(codeItem,"D_LENGTH")
 			local lenQN       = reaper.TimeMap2_timeToQN( proj, iLen ) * 960
-			local action        = GetItemAction(cItem)
-			local source                     = reaper.GetMediaItemTake_Source(cTake)
+			local action      = GetItemAction(codeItem)
+			local source      = reaper.GetMediaItemTake_Source(codeTake)
 			local _, _, _, mode = reaper.PCM_Source_GetSectionInfo( source )
 			items[#items+1] = { 
-				cItem       = cItem, 
-				cTake       = cTake, 
-				tkName      = tkName , 
+				codeItem       = codeItem, 
+				codeTake       = codeTake, 
+				takeName      = takeName , 
 				iLock       = iLock ,
 				isRecord    = isRecord,
 				isRecMute   = isRecMute,
 				lenQN       = lenQN,
-				type        = type,
+				itemType    = itemType,
 				mode        = mode,
 				special     = special,
 			}
 			if action == 'record' or action == 'record mute' then
-				recItems[#recItems+1] = {  tkName = tkName, iLen = iLen, lenQN = lenQN }
+				recItems[#recItems+1] = {  takeName = takeName, iLen = iLen, lenQN = lenQN }
 			end
 		end
 	end
@@ -132,50 +130,50 @@ function Main()
 	for i = 1, #recItems do
 		for j = 1, #items do
 			local v = items[j]
-			if not flags[v.cItem] then
-				if recItems[i].tkName == v.tkName then
-					flags[v.cItem] = true
+			if not flags[v.codeItem] then
+				if recItems[i].takeName == v.takeName then
+					flags[v.codeItem] = true
 					if v.iLock ~= 1 then
-						if v.type == "MIDIPOOL" then
-							local _, chunk    = reaper.GetItemStateChunk(v.cItem, '', false)
+						if v.itemType == "MIDIPOOL" then
+							local _, chunk    = reaper.GetItemStateChunk(v.codeItem, '', false)
 							local new_chunk = gsub(chunk, '<SOURCE%s+.->[\r]-[%\n]', "<SOURCE MIDIPOOL\n".."E "..string.format("%.0f",recItems[i].lenQN).." b0 7b 00".."\n>\n", 1)
-							reaper.SetItemStateChunk(v.cItem, new_chunk, true) 
-							reaper.GetSetMediaItemTakeInfo_String( v.cTake, 'P_NAME', v.tkName, true )
-						elseif v.type == "MIDI" then
-							local _, chunk    = reaper.GetItemStateChunk(v.cItem, '', false)
+							reaper.SetItemStateChunk(v.codeItem, new_chunk, true) 
+							reaper.GetSetMediaItemTakeInfo_String( v.codeTake, 'P_NAME', v.takeName, true )
+						elseif v.itemType == "MIDI" then
+							local _, chunk    = reaper.GetItemStateChunk(v.codeItem, '', false)
 							local new_chunk = gsub(chunk, '<SOURCE%s+.->[\r]-[%\n]', "<SOURCE MIDI\n".."E "..string.format("%.0f",recItems[i].lenQN).." b0 7b 00".."\n>\n", 1)
-							reaper.SetItemStateChunk(v.cItem, new_chunk, true) 
-							reaper.GetSetMediaItemTakeInfo_String( v.cTake, 'P_NAME', v.tkName, true )
-						else -- If AUDIO ANY TYPE
-							local _, chunk    = reaper.GetItemStateChunk(v.cItem, '', false)
+							reaper.SetItemStateChunk(v.codeItem, new_chunk, true) 
+							reaper.GetSetMediaItemTakeInfo_String( v.codeTake, 'P_NAME', v.takeName, true )
+						else -- If AUDIO ANY itemType
+							local _, chunk    = reaper.GetItemStateChunk(v.codeItem, '', false)
 							if not match(chunk, '[%\n](SM%s+.-)[%\n]') then sm = false else sm = true end
 							if v.mode then
 								if v.special ~= '1' then
 									if sm then
 										local new_chunk = gsub(chunk, '[%\n]SM%s+.-[\r]-[%\n]', '\n', 1)
-										reaper.SetItemStateChunk(v.cItem, new_chunk, true)
+										reaper.SetItemStateChunk(v.codeItem, new_chunk, true)
 									end
-									reaper.BR_SetTakeSourceFromFile2( v.cTake, source, false, true )
-									reaper.GetSetMediaItemTakeInfo_String( v.cTake, 'P_NAME', v.tkName, true )
-									reaper.BR_SetMediaSourceProperties( v.cTake, true, 0, recItems[i].iLen, 0, true )
-									reaper.SetMediaItemTakeInfo_Value( v.cTake, 'D_PLAYRATE', 1 )
+									reaper.BR_SetTakeSourceFromFile2( v.codeTake, source, false, true )
+									reaper.GetSetMediaItemTakeInfo_String( v.codeTake, 'P_NAME', v.takeName, true )
+									reaper.BR_SetMediaSourceProperties( v.codeTake, true, 0, recItems[i].iLen, 0, true )
+									reaper.SetMediaItemTakeInfo_Value( v.codeTake, 'D_PLAYRATE', 1 )
 								elseif v.special == '1' then
-									reaper.BR_SetTakeSourceFromFile2( v.cTake, source, false, true )
-									reaper.GetSetMediaItemTakeInfo_String( v.cTake, 'P_NAME', v.tkName, true )
-									reaper.BR_SetMediaSourceProperties( v.cTake, true, 0, recItems[i].iLen, 0, true )
+									reaper.BR_SetTakeSourceFromFile2( v.codeTake, source, false, true )
+									reaper.GetSetMediaItemTakeInfo_String( v.codeTake, 'P_NAME', v.takeName, true )
+									reaper.BR_SetMediaSourceProperties( v.codeTake, true, 0, recItems[i].iLen, 0, true )
 								end
 							else
 								if v.special ~= '1' then
 									if sm then
 										local new_chunk = gsub(chunk, '[%\n]SM%s+.-[\r]-[%\n]', '\n', 1)
-										reaper.SetItemStateChunk(v.cItem, new_chunk, true)
+										reaper.SetItemStateChunk(v.codeItem, new_chunk, true)
 									end
-									reaper.BR_SetTakeSourceFromFile2( v.cTake, source, false, true )
-									reaper.GetSetMediaItemTakeInfo_String( v.cTake, 'P_NAME', v.tkName, true )
-									reaper.SetMediaItemTakeInfo_Value( v.cTake, 'D_PLAYRATE', 1 )
+									reaper.BR_SetTakeSourceFromFile2( v.codeTake, source, false, true )
+									reaper.GetSetMediaItemTakeInfo_String( v.codeTake, 'P_NAME', v.takeName, true )
+									reaper.SetMediaItemTakeInfo_Value( v.codeTake, 'D_PLAYRATE', 1 )
 								elseif v.special == '1' then
-									reaper.BR_SetTakeSourceFromFile2( v.cTake, source, false, true )
-									reaper.GetSetMediaItemTakeInfo_String( v.cTake, 'P_NAME', v.tkName, true )
+									reaper.BR_SetTakeSourceFromFile2( v.codeTake, source, false, true )
+									reaper.GetSetMediaItemTakeInfo_String( v.codeTake, 'P_NAME', v.takeName, true )
 								end
 							end
 						end
