@@ -62,7 +62,7 @@ local function GetItemType( item, getsectiontype )
 			end
 		end
 	end
-	
+
 end
 
 local function GetItemAction(cItem)
@@ -109,7 +109,7 @@ local function CreateTableAllItems()
 
 		local cItem       = reaper.GetMediaItem(proj, i)
 		local _, type         = GetItemType( cItem, true )
-		
+
 		if type ~= "UNKNOW" and type ~= "RPP_PROJECT" and type ~= "VIDEO" and type ~= "CLICK" and type ~= "LTC" and type ~= "VIDEOEFFECT" then
 
 			local cTake       = reaper.GetMediaItemTake(cItem, 0)
@@ -158,7 +158,7 @@ function errorHandler(errObject)
 	local byLine = "([^\r\n]*)\r?\n?"
 	local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
 	local err = errObject   and string.match(errObject, trimPath)
-							or  "Couldn't get error message."
+	or  "Couldn't get error message."
 
 	local trace = debug.traceback()
 	local stack = {}
@@ -178,7 +178,7 @@ function errorHandler(errObject)
 		"Nabla:      \t".. version .."\n"..
 		"Reaper:      \t"..reaper.GetAppVersion().."\n"..
 		"Platform:    \t"..reaper.GetOS()
-	)
+		)
 
 end
 
@@ -223,7 +223,7 @@ function Main()
 							if v.mode then
 
 								if v.special ~= '1' then
-									
+
 									if sm then
 
 										local new_chunk = gsub(chunk, '[%\n]SM%s+.-[\r]-[%\n]', '\n', 1)
@@ -234,7 +234,7 @@ function Main()
 									reaper.BR_SetTakeSourceFromFile2( v.cTake, source, false, true )
 									reaper.GetSetMediaItemTakeInfo_String( v.cTake, 'P_NAME', v.tkName, true )
 									reaper.BR_SetMediaSourceProperties( v.cTake, true, 0, recItems[i].iLen, 0, true )
-								  reaper.SetMediaItemTakeInfo_Value( v.cTake, 'D_PLAYRATE', 1 )
+									reaper.SetMediaItemTakeInfo_Value( v.cTake, 'D_PLAYRATE', 1 )
 
 								elseif v.special == '1' then
 

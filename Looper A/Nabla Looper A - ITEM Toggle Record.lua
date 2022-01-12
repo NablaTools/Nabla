@@ -37,7 +37,7 @@ for i=0, sItems-1 do
     goto next
   end
   local r, action = reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '', false)
-  if action == "1" then
+  if action == 'record' then
     if recordFdbk == '2' or recordFdbk == '3' then
       local numTkMarkers =  reaper.GetNumTakeMarkers( cTake )
       for j=0, numTkMarkers-1 do
@@ -50,7 +50,7 @@ for i=0, sItems-1 do
     if recordFdbk == '1' or recordFdbk == '3' then
      reaper.SetMediaItemInfo_Value( cItem, 'I_CUSTOMCOLOR', 0 )
     end
-    reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '0', true)
+    reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '', true)
   else
     local numTkMarkers =  reaper.GetNumTakeMarkers( cTake )
     for j=0, numTkMarkers-1 do
@@ -73,7 +73,7 @@ for i=0, sItems-1 do
       local startoffs = reaper.GetMediaItemTakeInfo_Value( cTake, 'D_STARTOFFS' )
       reaper.SetTakeMarker( cTake, -1, 'Record', startoffs, reaper.ColorToNative(floor(r+0.5), floor(g+0.5), floor(b+0.5))|0x1000000 )
     end
-    reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '1', true)
+    reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', 'record', true)
   end  
     ::next::
 end --

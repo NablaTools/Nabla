@@ -19,9 +19,9 @@ local vars = {
 }
 for i=1, #vars do
 	local varName = vars[i][1] 
-	_G[varName] = reaper.GetExtState( 'NABLA_LOOPER_ARRANGED', vars[i][2] )
+	_G[varName] = reaper.GetExtState( 'NABLA_LOOPER_A', vars[i][2] )
 	if _G[varName] == "" or _G[varName] == nil then
-		reaper.SetExtState( 'NABLA_LOOPER_ARRANGED', vars[i][2], vars[i][3], true )
+		reaper.SetExtState( 'NABLA_LOOPER_A', vars[i][2], vars[i][3], true )
 		_G[varName] = vars[i][3]
 	end
 end
@@ -35,7 +35,7 @@ for i=0, sItems-1 do
 		goto next
 	end
 	local r,action = reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '', false)
-	if action == "3" then
+	if action == 'monitor' then
 		if recordFdbk == '2' or recordFdbk == '3' then
 			local numTkMarkers =  reaper.GetNumTakeMarkers( cTake )
 			for j=0, numTkMarkers-1 do
@@ -48,7 +48,7 @@ for i=0, sItems-1 do
 		if recordFdbk == '1' or recordFdbk == '3' then
 			reaper.SetMediaItemInfo_Value( cItem, 'I_CUSTOMCOLOR', 0 )
 		end
-		reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '0', true)
+		reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '', true)
 	else
 		local numTkMarkers =  reaper.GetNumTakeMarkers( cTake )
 		for j=0, numTkMarkers-1 do
@@ -68,7 +68,7 @@ for i=0, sItems-1 do
 			local startoffs = reaper.GetMediaItemTakeInfo_Value( cTake, 'D_STARTOFFS' )
 			reaper.SetTakeMarker( cTake, -1, 'Monitor', startoffs, reaper.ColorToNative(floor(r+0.5), floor(g+0.5), floor(b+0.5))|0x1000000 )
 		end
-		reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', '3', true)
+		reaper.GetSetMediaItemInfo_String(cItem, 'P_EXT:ITEM_ACTION', 'monitor', true)
 	end  
 	::next::
 end -- 

@@ -59,9 +59,9 @@ for i = 1, #vars do
 	local varName = vars[i][1]
 	local section = vars[i][2]
 	local value   = vars[i][3]
-	_G[varName] = reaper.GetExtState( 'NABLA_LOOPER_ARRANGED', section )
+	_G[varName] = reaper.GetExtState( 'NABLA_LOOPER_A', section )
 	if _G[varName] == "" or _G[varName] == nil then
-		reaper.SetExtState( 'NABLA_LOOPER_ARRANGED', section, value, true )
+		reaper.SetExtState( 'NABLA_LOOPER_A', section, value, true )
 		_G[varName] = value
 	end
 end
