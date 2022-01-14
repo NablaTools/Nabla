@@ -53,7 +53,7 @@ if reaper.GetPlayState() ~= 5 then
 	SetReaperConfigs()
 	SetPDC( preservePDC )
 	if safeMode == "true" then xpcall( InsertReaDelay, errorHandler) end
-	setIdxSatart()
+	setIdxStart()
 	setIdxEnd()
 	reaper.Main_OnCommand(40252, 0)
 	reaper.CSurf_OnRecord()

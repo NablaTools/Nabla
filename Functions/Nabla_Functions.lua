@@ -1,42 +1,42 @@
 -- Activate takes by Name
 function active_take_x(str)
-  local NumItems=reaper.CountMediaItems( 0 )
-  for i=0, NumItems-1 do
-    local CodeItem=reaper.GetMediaItem( 0, i )
-    local NumTakes = reaper.GetMediaItemNumTakes( CodeItem )
-    for i=0, NumTakes-1 do
-      local CodeTake = reaper.GetMediaItemTake( CodeItem, i )
-      local TakeName = reaper.GetTakeName( CodeTake )
-      if TakeName:lower():match("^(" .. str .. ")") then
-        reaper.SetActiveTake( CodeTake )
-        reaper.UpdateArrange()
-      end
-    end 
-  end
+	local NumItems=reaper.CountMediaItems( 0 )
+	for i=0, NumItems-1 do
+		local CodeItem=reaper.GetMediaItem( 0, i )
+		local NumTakes = reaper.GetMediaItemNumTakes( CodeItem )
+		for i=0, NumTakes-1 do
+			local CodeTake = reaper.GetMediaItemTake( CodeItem, i )
+			local TakeName = reaper.GetTakeName( CodeTake )
+			if TakeName:lower():match("^(" .. str .. ")") then
+				reaper.SetActiveTake( CodeTake )
+				reaper.UpdateArrange()
+			end
+		end 
+	end
 end
 
 -- Wait for next measure 
 function wait_next_measure(measures,str)
-  local state = reaper.GetPlayState()
-  local is_new_value, filename, sec, cmd, mode, resolution, val = reaper.get_action_context()
-  if measures ~= nil then
-    mea = measures
-    str_s = str
-  end
-  if state==1 then
-    local play = reaper.GetPlayPosition()
-    local retval, measures_actual, cml, fullbeats, cdenom = reaper.TimeMap2_timeToBeats( 0, play+0.1 )
-    reaper.SetToggleCommandState( sec, cmd, 1 )
-    reaper.RefreshToolbar2( sec, cmd ) 
-    if mea ~= measures_actual then
-      local str = str_s
-      active_take_x(str)
-      reaper.SetToggleCommandState( sec, cmd, 0 )
-      reaper.RefreshToolbar2( sec, cmd )     
-      return
-    end
-  end
-  reaper.defer(wait_next_measure)
+	local state = reaper.GetPlayState()
+	local _, _, sec, cmd, _, _, _ = reaper.get_action_context()
+	if measures ~= nil then
+		mea = measures
+		str_s = str
+	end
+	if state==1 then
+		local play = reaper.GetPlayPosition()
+		local _, measures_actual, _, _, _ = reaper.TimeMap2_timeToBeats( 0, play+0.1 )
+		reaper.SetToggleCommandState( sec, cmd, 1 )
+		reaper.RefreshToolbar2( sec, cmd ) 
+		if mea ~= measures_actual then
+			local str = str_s
+			active_take_x(str)
+			reaper.SetToggleCommandState( sec, cmd, 0 )
+			reaper.RefreshToolbar2( sec, cmd )     
+			return
+		end
+	end
+	reaper.defer(wait_next_measure)
 end
 
 -- Looper A Functions 
@@ -52,14 +52,19 @@ function msg(value, line)
 end
 
 function IsProjectSaved()
-	if reaper.GetOS() == "Win32" or reaper.GetOS() == "Win64" then separator = "\\" else separator = "/" end
-	retval, project_path_name = reaper.EnumProjects(-1, "")
+	if reaper.GetOS() == "Win32" or reaper.GetOS() == "Win64" then 
+		separator = "\\" 
+	else 
+		separator = "/" 
+	end
+	local _, project_path_name = reaper.EnumProjects(-1, "")
 	if project_path_name ~= "" then
 		dir = project_path_name:match("(.*"..separator..")")
 		project_saved = true
 		return project_saved, dir, separator
 	else
-		display = reaper.ShowMessageBox("You need to save the project to execute Nabla Looper.", "File Export", 1)
+		local message = "You need to save the project to execute Nabla Looper."
+		local display = reaper.ShowMessageBox(message, "File Export", 1)
 		if display == 1 then
 			reaper.Main_OnCommand(40022, 0) -- SAVE AS PROJECT
 			return IsProjectSaved()
@@ -87,6 +92,14 @@ function errorHandler(errObject)
 		"Reaper:      \t"..reaper.GetAppVersion().."\n"..
 		"Platform:    \t"..reaper.GetOS()
 		)
+end
+
+function saveTrackSelection()
+	reaper.Main_OnCommand(reaper.NamedCommandLookup('_SWS_SAVETRACK'), 0)
+end
+
+function restoreTrackSelection()
+	reaper.Main_OnCommand(reaper.NamedCommandLookup('_SWS_RESTORETRACK'), 0)
 end
 
 function setActionState(state)
@@ -142,7 +155,7 @@ function GetItemType( item, getsectiontype )
 end
 
 function GetItemAction(itemCode)
-	local retval, itemAction = reaper.GetSetMediaItemInfo_String(itemCode, 'P_EXT:ITEM_ACTION', '', false)
+	retval, itemAction = reaper.GetSetMediaItemInfo_String(itemCode, 'P_EXT:ITEM_ACTION', '', false)
 	if retval then 
 		return itemAction 
 	else
@@ -172,6 +185,7 @@ function CreateTableAllItems()
 			local trackMode       = reaper.GetMediaTrackInfo_Value( trackCode, 'I_RECMODE' )
 			local itemSource      = reaper.GetMediaItemTake_Source(takeCode)
 			local _, _, _, itemMode = reaper.PCM_Source_GetSectionInfo( itemSource )
+			local itemLengthQN    = reaper.TimeMap2_timeToQN( proj, itemLength ) * 960
 			items[#items+1] = {
 				itemCode     = itemCode, 
 				itemStart    = itemStart, 
@@ -199,7 +213,23 @@ function CreateTableAllItems()
 end
 
 function AddToRecordingItemsTable(i, v)
-	recItems[#recItems+1] = {idx = i, itemStart = v.itemStart, itemEnd = v.itemEnd}
+	recItems[#recItems+1] = {
+		idx = i, 
+		itemStart = v.itemStart, 
+		itemEnd = v.itemEnd, 
+		takeName = v.takeName, 
+		itemLength = v.itemLength, 
+		itemLengthQN = v.itemLengthQN
+	}
+end
+
+function CreateRecordItemsTable()
+	for i = 1, #items do
+		local v = items[i]
+		if v.itemAction ~= '' and v.itemAction ~= 'monitor' then 
+			AddToRecordingItemsTable(i, v) 
+		end
+	end
 end
 
 function SetIfBuffer(m, v)
@@ -272,32 +302,47 @@ end
 function AddToActionTimesTable(i, v)
 	if not flags["sta"..v.itemStart] then
 		flags["sta"..v.itemStart] = true
-		startTimes[ #startTimes + 1 ]  = {idx = i, itemStartStr = v.itemStartStr, itemStart = v.itemStart } 
+		startTimes[ #startTimes + 1 ]  = {
+			idx = i, 
+			itemStartStr = v.itemStartStr, 
+			itemStart = v.itemStart 
+		} 
 	end
 	if not flags["end"..v.itemEnd] then
 		flags["end"..v.itemEnd] = true
-		endTimes[ #endTimes + 1 ] = {idx = i, itemEndStr = v.itemEndStr, itemEnd = v.itemEnd }
+		endTimes[ #endTimes + 1 ] = {
+			idx = i, 
+			itemEndStr = v.itemEndStr, 
+			itemEnd = v.itemEnd 
+		}
 	end
 end
 
 function AddToActionTracksTable(v)
 	if not flags[v.trackCode] then
 		flags[v.trackCode] = true
-		recTracks[ #recTracks + 1 ] = { trackCode = v.trackCode, trackInput = v.trackInput, trackMode = v.trackMode, itemAction = v.itemAction}
+		recTracks[ #recTracks + 1 ] = { 
+			trackCode = v.trackCode, 
+			trackInput = v.trackInput, 
+			trackMode = v.trackMode, 
+			itemAction = v.itemAction
+		}
 	end
 end
+
+
 
 function CreateActionsTables()
 	for i = 1, #items do
 		local v = items[i]
-			if v.itemAction ~= '' and v.itemAction ~= 'monitor' then AddToRecordingItemsTable(i, v) end
-			AddToActionTracksTable(v)
-			AddToActionTimesTable(i, v)
-			for j = 1, #items do
-				local m = items[j]
-				SetIfBuffer(m, v)
-				if not flags[v.takeNameStr] then AddToGroupItemsByNameTable(v, m, j) end
-			end
+		if v.itemAction ~= '' and v.itemAction ~= 'monitor' then AddToRecordingItemsTable(i, v) end
+		AddToActionTracksTable(v)
+		AddToActionTimesTable(i, v)
+		for j = 1, #items do
+			local m = items[j]
+			SetIfBuffer(m, v)
+			if not flags[v.takeNameStr] then AddToGroupItemsByNameTable(v, m, j) end
+		end
 	end
 	table.sort(startTimes, function(a,b) return a.itemStart < b.itemStart end) 
 	table.sort(endTimes, function(a,b) return a.itemEnd < b.itemEnd end) 
@@ -316,7 +361,8 @@ end
 
 function toggleReaDelay(v, state)
 	if v.trackInput < 4096 then
-		reaper.TrackFX_SetParam( v.trackCode, reaper.TrackFX_AddByName( v.trackCode, 'Nabla ReaDelay', false, 0 ), 13, state )
+		local integerFx = reaper.TrackFX_AddByName( v.trackCode, 'Nabla ReaDelay', false, 0 )
+		reaper.TrackFX_SetParam( v.trackCode, integerFx, 13, state )
 	end
 end
 
@@ -394,7 +440,9 @@ end
 function GetIDByScriptName(scriptName)
 	local file = io.open(reaper.GetResourcePath()..'/reaper-kb.ini','r'); 
 	if not file then return -1 end
-	local scrName = gsub(gsub(scriptName, 'Script:%s+',''), "[%%%[%]%(%)%*%+%-%.%?%^%$]",function(s)return"%"..s;end);
+	local originalStr = gsub(scriptName, 'Script:%s+','')
+	local pattern = "[%%%[%]%(%)%*%+%-%.%?%^%$]"
+	local scrName = gsub(originalStr, pattern,function(s)return"%"..s;end);
 	for var in file:lines() do;
 		if match(var, scrName) then
 			local id = "_" .. gsub(gsub(match(var, ".-%s+.-%s+.-%s+(.-)%s"),'"',""), "'","")
@@ -553,7 +601,8 @@ function RemoveReaDelay()
 	for i = 1, #recTracks do
 		local v = recTracks[i]
 		if v.trackInput < 4096 then
-			reaper.TrackFX_Delete( v.trackCode, reaper.TrackFX_AddByName( v.trackCode, 'Nabla ReaDelay', false, 0 ) )
+			local integerFx = reaper.TrackFX_AddByName( v.trackCode, 'Nabla ReaDelay', false, 0 )
+			reaper.TrackFX_Delete( v.trackCode, integerFx)
 		end
 	end
 end
@@ -597,13 +646,21 @@ function AtExitActions()
 	reaper.Undo_EndBlock("--> END ARRANGED MODE", -1)
 end
 
+function SetFxParam(trackCode, integerFx, integerParam, numberValue)
+end
 
 function SetReaDelayTime(trackCode, itemLength, trackInput)
-	reaper.TrackFX_SetParam( trackCode, reaper.TrackFX_AddByName( trackCode, 'Nabla ReaDelay', false, 0 ), 4, (reaper.TimeMap_timeToQN_abs( 0, itemLength )*2)/256 )
+	local integerFx = reaper.TrackFX_AddByName( trackCode, 'Nabla ReaDelay', false, 0 )
+	local integerParam = 4 
+	local numberValue = (reaper.TimeMap_timeToQN_abs( 0, itemLength )*2)/256
+	reaper.TrackFX_SetParam( trackCode, integerFx, integerParam, numberValue)
 end
 
 function OnReaDelay(trackCode)
-	reaper.TrackFX_SetParam( trackCode, reaper.TrackFX_AddByName( trackCode, 'Nabla ReaDelay', false, 0 ), 13, 1 )
+	local integerFx = reaper.TrackFX_AddByName( trackCode, 'Nabla ReaDelay', false, 0 )
+	local integerParam = 13 
+	local numberValue = 1
+	reaper.TrackFX_SetParam( trackCode, integerFx, integerParam, numberValue )
 end
 
 function OffReaDelayDefer(itemEndStr, redItemEnd)
@@ -617,7 +674,10 @@ function OffReaDelayDefer(itemEndStr, redItemEnd)
 				reaper.Undo_BeginBlock()
 				local v = items[ _G[newsiEnd][i].idx ]
 				if v.itemBuffer == 1 then
-					reaper.TrackFX_SetParam( v.trackCode, reaper.TrackFX_AddByName( v.trackCode, 'Nabla ReaDelay', false, 0 ), 13, 0 )
+					local integerFx = reaper.TrackFX_AddByName( v.trackCode, 'Nabla ReaDelay', false, 0 )
+					local integerParam = 13 
+					local numberValue = 0
+					reaper.TrackFX_SetParam( v.trackCode, integerFx, integerParam, numberValue )
 				end
 				reaper.Undo_EndBlock("End itemBuffer: " .. v.takeName, -1)
 			end
@@ -640,7 +700,8 @@ function CreateNewSourceForItem(v, section, takeName, takeIndex)
 	local r, chunk = reaper.GetItemStateChunk(v.itemCode, "", false) 
 	local new_chunk   = gsub(chunk, '<SOURCE%s+.->', section .. "\n>" )
 	reaper.SetItemStateChunk(v.itemCode, new_chunk, true) 
-	reaper.GetSetMediaItemTakeInfo_String( v.takeCode, 'P_NAME', takeName.." TK:"..takeIndex, true )
+	local takeString = takeName.." TK:"..takeIndex
+	reaper.GetSetMediaItemTakeInfo_String( v.takeCode, 'P_NAME', takeString, true )
 end
 
 function PropagateAudio(takeNameStr, section, takeName, takeIndex)
@@ -663,7 +724,8 @@ function PropagateMIDI(takeNameStr, section, newidx)
 		local r, chunk = reaper.GetItemStateChunk(v.itemCode, "", false) 
 		local new_chunk   = gsub(chunk, '<SOURCE%s+.->', section .. "\n>" )
 		reaper.SetItemStateChunk( v.itemCode, new_chunk, true)
-		reaper.GetSetMediaItemTakeInfo_String(v.takeCode, 'P_NAME', v.takeName.." TK:"..format("%d", newidx), true )
+		local takeString = v.takeName.." TK:"..format("%d", newidx)
+		reaper.GetSetMediaItemTakeInfo_String(v.takeCode, 'P_NAME', takeString, true )
 		if v.itemSource then reaper.PCM_Source_Destroy(v.itemSource) end
 	end
 end
