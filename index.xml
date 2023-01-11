@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="Nabla" commit="96dc6887aa30ced9abf96c005c5dba6e64e28304">
+<index version="1" name="Nabla" commit="af9730a3b2227e0598b139782082d8bb9e8e8bf2">
   <category name="Looper A">
     <reapack name="Nabla Looper A.lua" type="script">
       <metadata>
@@ -38,45 +38,45 @@
       </metadata>
       <version name="3.0.0" author="Lokasenna" time="2022-01-11T20:53:02Z">
         <changelog><![CDATA[Minor updates to documentation, dev options, and version checking]]></changelog>
-        <source main="main" file="library/Scythe_Nabla library path.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/Scythe_Nabla%20library%20path.lua</source>
-        <source file="library/gui/config.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/config.lua</source>
-        <source file="library/gui/core.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/core.lua</source>
-        <source file="library/gui/element.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/element.lua</source>
-        <source file="library/gui/layer.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/layer.lua</source>
-        <source file="library/gui/theme.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/theme.lua</source>
-        <source file="library/gui/window.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/window.lua</source>
-        <source file="library/gui/elements/Button.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/Button.lua</source>
-        <source file="library/gui/elements/Checklist.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/Checklist.lua</source>
-        <source file="library/gui/elements/ColorPicker.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/ColorPicker.lua</source>
-        <source file="library/gui/elements/Frame.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/Frame.lua</source>
-        <source file="library/gui/elements/Knob.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/Knob.lua</source>
-        <source file="library/gui/elements/Label.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/Label.lua</source>
-        <source file="library/gui/elements/Listbox.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/Listbox.lua</source>
-        <source file="library/gui/elements/Menubar.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/Menubar.lua</source>
-        <source file="library/gui/elements/Menubox.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/Menubox.lua</source>
-        <source file="library/gui/elements/Radio.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/Radio.lua</source>
-        <source file="library/gui/elements/Slider.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/Slider.lua</source>
-        <source file="library/gui/elements/Tabs.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/Tabs.lua</source>
-        <source file="library/gui/elements/TextEditor.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/TextEditor.lua</source>
-        <source file="library/gui/elements/Textbox.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/Textbox.lua</source>
-        <source file="library/gui/elements/shared/option.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/shared/option.lua</source>
-        <source file="library/gui/elements/shared/text.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/gui/elements/shared/text.lua</source>
-        <source file="library/public/buffer.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/buffer.lua</source>
-        <source file="library/public/color.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/color.lua</source>
-        <source file="library/public/const.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/const.lua</source>
-        <source file="library/public/error.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/error.lua</source>
-        <source file="library/public/file.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/file.lua</source>
-        <source file="library/public/font.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/font.lua</source>
-        <source file="library/public/gfx.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/gfx.lua</source>
-        <source file="library/public/image.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/image.lua</source>
-        <source file="library/public/math.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/math.lua</source>
-        <source file="library/public/menu.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/menu.lua</source>
-        <source file="library/public/message.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/message.lua</source>
-        <source file="library/public/sprite.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/sprite.lua</source>
-        <source file="library/public/string.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/string.lua</source>
-        <source file="library/public/table.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/table.lua</source>
-        <source file="library/public/text.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/public/text.lua</source>
-        <source file="library/scythe.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/library/scythe.lua</source>
+        <source main="main" file="library/Scythe_Nabla library path.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/Scythe_Nabla%20library%20path.lua</source>
+        <source file="library/gui/config.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/config.lua</source>
+        <source file="library/gui/core.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/core.lua</source>
+        <source file="library/gui/element.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/element.lua</source>
+        <source file="library/gui/layer.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/layer.lua</source>
+        <source file="library/gui/theme.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/theme.lua</source>
+        <source file="library/gui/window.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/window.lua</source>
+        <source file="library/gui/elements/Button.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/Button.lua</source>
+        <source file="library/gui/elements/Checklist.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/Checklist.lua</source>
+        <source file="library/gui/elements/ColorPicker.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/ColorPicker.lua</source>
+        <source file="library/gui/elements/Frame.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/Frame.lua</source>
+        <source file="library/gui/elements/Knob.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/Knob.lua</source>
+        <source file="library/gui/elements/Label.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/Label.lua</source>
+        <source file="library/gui/elements/Listbox.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/Listbox.lua</source>
+        <source file="library/gui/elements/Menubar.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/Menubar.lua</source>
+        <source file="library/gui/elements/Menubox.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/Menubox.lua</source>
+        <source file="library/gui/elements/Radio.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/Radio.lua</source>
+        <source file="library/gui/elements/Slider.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/Slider.lua</source>
+        <source file="library/gui/elements/Tabs.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/Tabs.lua</source>
+        <source file="library/gui/elements/TextEditor.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/TextEditor.lua</source>
+        <source file="library/gui/elements/Textbox.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/Textbox.lua</source>
+        <source file="library/gui/elements/shared/option.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/shared/option.lua</source>
+        <source file="library/gui/elements/shared/text.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/gui/elements/shared/text.lua</source>
+        <source file="library/public/buffer.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/buffer.lua</source>
+        <source file="library/public/color.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/color.lua</source>
+        <source file="library/public/const.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/const.lua</source>
+        <source file="library/public/error.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/error.lua</source>
+        <source file="library/public/file.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/file.lua</source>
+        <source file="library/public/font.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/font.lua</source>
+        <source file="library/public/gfx.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/gfx.lua</source>
+        <source file="library/public/image.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/image.lua</source>
+        <source file="library/public/math.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/math.lua</source>
+        <source file="library/public/menu.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/menu.lua</source>
+        <source file="library/public/message.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/message.lua</source>
+        <source file="library/public/sprite.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/sprite.lua</source>
+        <source file="library/public/string.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/string.lua</source>
+        <source file="library/public/table.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/table.lua</source>
+        <source file="library/public/text.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/public/text.lua</source>
+        <source file="library/scythe.lua">https://raw.githubusercontent.com/NablaTools/Nabla/main/Sycthe%20Nabla/library/scythe.lua</source>
       </version>
     </reapack>    
   </category>
