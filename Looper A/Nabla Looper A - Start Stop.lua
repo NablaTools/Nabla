@@ -6,7 +6,7 @@
 * Author URI: http://forum.cockos.com/member.php?u=105939 
 --]]
 --======================================================================
-local console = 1
+local console = 0
 local version = "v.0.3.0"
 
 local reaper = reaper
@@ -286,12 +286,12 @@ local function CreateMainTables()
     for i = 1, #items_table do
         local v = items_table[i]
         if not flags[v.variable_take_name] then CreateTableForEachVariableTakeName(v) end
-        if v.item_action > '0' then
-            if v.item_action ~= "3" then AddItemInfoToRecItemsTable(i, v) end
+        -- if v.item_action ~= '0' then
+            if v.item_action ~= "monitor" then AddItemInfoToRecItemsTable(i, v) end
             AddTrackInfoToTracksRecTable(v)
             AddItemPositionInfoToItemPositionTables(i, v)
             SetBufferVariable(v)
-        end
+        -- end
     end
     table.sort(item_start_position_table, function(a,b) return a.item_position < b.item_position end)
     table.sort(item_end_position_table, function(a,b) return a.item_end_position < b.item_end_position end)
@@ -303,7 +303,7 @@ end
 local function SetActionTracksConfig()
 	for i = 1, #rec_tracks_table do
 		local v = rec_tracks_table[i]
-		if v.item_action == "1" then
+		if v.item_action == "record" then
 			if v.track_rec_mode >= 7 and v.track_rec_mode <= 9 or v.track_rec_mode == 16 then
 				reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECMODE', 0 )
 			end
@@ -311,13 +311,13 @@ local function SetActionTracksConfig()
 			reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECMONITEMS', 1 )
 			reaper.SetMediaTrackInfo_Value( v.code_track , 'I_RECMON', 0 )
 			reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECARM', 0 )
-		elseif v.item_action == '2' then
+		elseif v.item_action == 'record mute' then
 			if v.track_rec_mode ~= 0 then reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECMODE', 0 ) end
 			reaper.SetMediaTrackInfo_Value( v.code_track, 'B_FREEMODE', 0 )
 			reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECMONITEMS', 1 )
 			reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECARM', 0 )
 		end
-		if v.item_action == "3" then
+		if v.item_action == "monitor" then
 			reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECMODE', 2 )
 			reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECMON', 0 )
 			reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECARM', 1 )
@@ -498,7 +498,7 @@ local function InsertReaDelay()
 	reaper.Undo_BeginBlock()
 	for i = 1, #rec_tracks_table do
 		local v = rec_tracks_table[i]
-		if v.item_action ~= '3' then
+		if v.item_action ~= 'monitor' then
 			if v.track_rec_input < 4096 then
 				local isFx = reaper.TrackFX_AddByName( v.code_track, 'ReaDelay', false, -1000 )
 				reaper.TrackFX_SetParam( v.code_track, isFx, 0, 1 )
@@ -516,7 +516,7 @@ local function SetPDC( set )
 	local tStrRec = {}
 	for i = 1, #rec_tracks_table do
 		local v = rec_tracks_table[i]
-		if v.item_action ~= '3' then
+		if v.item_action ~= 'monitor' then
 			local _, trChunk = reaper.GetTrackStateChunk(v.code_track, '', false)
 			local strRec = match(trChunk, 'REC%s+.-[%\n]')
 			for substring in gmatch(strRec, "%S+") do insert(tStrRec, substring) end
@@ -718,9 +718,9 @@ local function ArmTrackMonitorGroupMIDI(str_item_position)
 		local v = items_table[ _G[str_item_position][i].item_index ]
 		if v.track_rec_input >= 4096 then
 			reaper.Undo_BeginBlock()
-			if v.item_action == "1" or v.item_action == "3" then
+			if v.item_action == "record" or v.item_action == "monitor" then
 				reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECMON', 1 )
-			elseif v.item_action == "2" then
+			elseif v.item_action == "record mute" then
 				reaper.SetMediaTrackInfo_Value( v.code_track, 'B_MUTE', 1 )
 				reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECMON', 1 )
 			end
@@ -734,9 +734,9 @@ local function ArmTrackMonitorGroupAudio(str_item_position)
 		local v = items_table[ _G[str_item_position][i].item_index ]
 		if v.track_rec_input < 4096 then
 			reaper.Undo_BeginBlock()
-			if v.item_action == "1" or v.item_action == "3" then
+			if v.item_action == "record" or v.item_action == "monitor" then
 				reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECMON', 1 )
-			elseif v.item_action == "2" then
+			elseif v.item_action == "record mute" then
 				reaper.SetMediaTrackInfo_Value( v.code_track, 'B_MUTE', 1 )
 				reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECMON', 1 )
 			end
@@ -828,6 +828,7 @@ local function GetNewLoopMIDIToPropagate(addedItem, v)
 end
 
 local function ActionWhenFinishAudioLoopRecording(v)
+    Msg('ActionWhenFinishAudioLoopRecording')
     reaper.Undo_BeginBlock()
     reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECARM', 0 )
     reaper.SelectAllMediaItems( 0, false )
@@ -855,13 +856,17 @@ local function DeactivateRecording()
         if idxEnd == nil or idxEnd > #item_end_position_table then return end
         local item_end_position  = item_end_position_table[idxEnd].item_end_position
         if pPos >= item_end_position-0.01 then
+            Msg(item_end_position)
             local str_item_end_position = item_end_position_table[idxEnd].str_item_end_position
+            Msg(str_item_end_position)
             if flags[str_item_end_position.."endRec"] then reaper.defer(DeactivateRecording) end
+            Msg('Here')
             flags[str_item_end_position.."endRec"] = true
             idxEnd = idxEnd + 1
             for i = 1, #_G[ str_item_end_position ] do
                 local v = items_table[ _G[str_item_end_position][i].item_index ]
-                if v.item_action == "1" or v.item_action == "2" then
+                Msg(v.item_action)
+                if v.item_action == "record" or v.item_action == "record mute" then
                     ActionWhenFinishAudioLoopRecording(v)
                 end
             end
@@ -878,36 +883,36 @@ local function ActionsForDeactivateMonitor(str_item_end_position, i)
     local function track_rec_mode()  reaper.SetMediaTrackInfo_Value( v.code_track, 'I_RECMODE', 2 ) end
     if SafeMode == 'true' then
         if v.buffer == 1 then
-            if v.item_action == "1" then
+            if v.item_action == "record" then
                 if v.track_rec_input < 4096 then
                     reaper.TrackFX_SetParam( v.code_track, reaper.TrackFX_AddByName( v.code_track, 'Nabla ReaDelay', false, 0 ), 13, 1 )
                 end
                 rec_monitor_off()
                 OffReaDelayDefer( v.str_item_end_position, v.item_end_position + BufferTime )
-            elseif v.item_action == "2" then
+            elseif v.item_action == "record mute" then
                 if v.track_rec_input < 4096 then
                     reaper.TrackFX_SetParam( v.code_track, reaper.TrackFX_AddByName( v.code_track, 'Nabla ReaDelay', false, 0 ), 13, 1 )
                 end
                 track_mute_off()
                 OffReaDelayDefer( v.str_item_end_position, v.item_end_position + BufferTime )
-            elseif v.item_action == "3" then
+            elseif v.item_action == "monitor" then
                 rec_monitor_off()
                 track_rec_mode()
             end
         else
-            if v.item_action == "1" or v.item_action == "2" then
+            if v.item_action == "record" or v.item_action == "record mute" then
                 rec_monitor_off()
-            elseif v.item_action == "3" then
+            elseif v.item_action == "monitor" then
                 rec_monitor_off()
                 track_rec_mode()
             end
         end
     else
-        if v.item_action == "1" then
+        if v.item_action == "record" then
                 rec_monitor_off()
-        elseif v.item_action == "2" then
+        elseif v.item_action == "record mute" then
                 track_mute_off()
-        elseif v.item_action == "3" then
+        elseif v.item_action == "monitor" then
                 rec_monitor_off()
                 track_rec_mode()
         end
