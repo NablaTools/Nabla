@@ -40,7 +40,7 @@
       </version>
     </reapack>
   </category>
-  <category name="Nabla Looper/Toolbars">
+  <category name="Toolbars">
     <reapack name="Nabla Looper Toolbars.ReaperMenu" type="script">
       <metadata>
         <link rel="website">https://www.nablatools.com</link>
