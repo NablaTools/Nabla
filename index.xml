@@ -40,6 +40,17 @@
       </version>
     </reapack>
   </category>
+  <category name="Nabla Looper/Toolbars">
+    <reapack name="Nabla Looper Toolbars.ReaperMenu" type="script">
+      <metadata>
+        <link rel="website">https://www.nablatools.com</link>
+        <link rel="donation">https://paypal.me/estebanmoralesaudio</link>
+      </metadata>
+      <version name="0.3.0" author="Esteban Morales" time="2023-08-03T01:09:18Z">
+        <source file="Nabla Looper A.ReaperMenu">https://github.com/NablaTools/Nabla/raw/main/Toolbars/Nabla%20Looper%20A.ReaperMenu</source>
+      </version>
+    </reapack>
+  </category>
   <category name="Sycthe Nabla">
     <reapack name="Lokasenna_Scythe library v3 for NablaTools.lua" type="script" desc="Scythe library v3 for NablaTools">
       <metadata>
