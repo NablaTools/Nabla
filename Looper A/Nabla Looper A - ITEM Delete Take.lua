@@ -4,7 +4,7 @@
 * Version: 0.3
 * Author: Esteban Morales
 * Author URI: http://forum.cockos.com/member.php?u=105939 
---]] 
+--]]
 --======================================================================
 local console = 0
 local reaper = reaper
@@ -142,11 +142,11 @@ function PropagateMIDI(tkName, key)
       local _, chunk    = reaper.GetItemStateChunk(v.codeItem, '', false)
       if v.type == "MIDI" then
         local new_chunk   = gsub(chunk, '<SOURCE%s+.->[\r]-[%\n]', "<SOURCE MIDI\n".."E "..v.lenQN.." b0 7b 00".."\n>\n", 1)
-        reaper.SetItemStateChunk(v.codeItem, new_chunk, true) 
+        reaper.SetItemStateChunk(v.codeItem, new_chunk, true)
         reaper.GetSetMediaItemTakeInfo_String( v.cTake, 'P_NAME', tkName, true )
       elseif v.type == "MIDIPOOL" then
         local new_chunk   = gsub(chunk, '<SOURCE%s+.->[\r]-[%\n]', "<SOURCE MIDIPOOL\n".."E "..v.lenQN.." b0 7b 00".."\n>\n", 1)
-        reaper.SetItemStateChunk(v.codeItem, new_chunk, true) 
+        reaper.SetItemStateChunk(v.codeItem, new_chunk, true)
         reaper.GetSetMediaItemTakeInfo_String( v.cTake, 'P_NAME', tkName, true )
       end
 
@@ -162,25 +162,26 @@ function GetNumForLoopTakes( cTake )
   end
 end
 
-function drawMenu(menuName)
+function drawMenu()
+  local str = ''
   local SHIFT_X = -50;
   local SHIFT_Y = 15;
   local x,y = reaper.GetMousePosition();
   local x,y =  x+(SHIFT_X or 0),y+(SHIFT_Y or 0);
-  gfx.init('',0,0,0,x,y)
-  local str = ''
-  local str_2 = ''
+  gfx.init('Delete Take',175,0,0,x,y)
+
   for i = 0, 10000 do
-    retval, key, val = reaper.EnumProjExtState( 0, sTkName, i )
+    local retval, key, _ = reaper.EnumProjExtState( 0, sTkName, i )
     if retval == false then  break end
     str = str.."|Delete - "..tkName.." - Take "..string.format("%d", key)
   end
-  retval = gfx.showmenu(str)
+
+  local retval = gfx.showmenu(str)
 
   if retval > 0 then
-    _, key, str_val = reaper.EnumProjExtState( 0, sTkName, string.format("%.0f", retval-1 ) )
+    local _, key, str_val = reaper.EnumProjExtState( 0, sTkName, string.format("%.0f", retval-1 ) )
     for substring in gmatch(str_val, '([^,]+)') do insert(tStrRec, substring) end
-    yesno =  reaper.MB( "Delete \""..tkName.." TK:"..string.format("%.0f", key ).."\"".." and its media file: "..tStrRec[1], "Delete take and source files (no undo!)", 4 )
+    local yesno =  reaper.MB( "Delete \""..tkName.." TK:"..string.format("%.0f", key ).."\"".." and its media file: "..tStrRec[1], "Delete take and source files (no undo!)", 4 )
     if yesno == 6 then
 
       if tStrRec[4] == "AUDIO" then
