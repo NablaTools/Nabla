@@ -61,7 +61,6 @@ local window
 ------------------------------------------------------------------
 --  TO BOOLEAN
 ------------------------------------------------------------------
---- asign to local
 local type = type;
 local assert = assert;
 local strformat = string.format;
@@ -116,13 +115,6 @@ local function btn_click()
   reaper.Undo_EndBlock("Set configurations", 0)
   Scythe.quit = true
 end
-
-function getHotkey()
-  -- Scythe.quit = true
-  -- local scriptName = "Script: Nabla Looper Manual Keyboard Shortcut (Nabla Looper).lua"
-  -- local idbyscript = GetIDByScriptName(scriptName)
-  -- reaper.Main_OnCommand(reaper.NamedCommandLookup(idbyscript),0)
-end
 ------------------------------------
 -------- Window settings -----------
 ------------------------------------
@@ -137,7 +129,6 @@ window = GUI.createWindow({
 ------------------------------------
 local layer_3 = GUI.createLayer({name = "Layer_3", z = 3})
 layer_3:addElements( GUI.createElements(
-
   {
     name = "frmDivider",
     type = "Frame",
@@ -146,8 +137,8 @@ layer_3:addElements( GUI.createElements(
     w = window.w-40,
     h = window.h-40,
   }
-
 ))
+
 local layer_2 = GUI.createLayer({name = "Layer_2", z = 2})
 layer_2:addElements( GUI.createElements(
   {
@@ -158,7 +149,6 @@ layer_2:addElements( GUI.createElements(
     w = 82,
     h = 20,
     font = 2,
-    --color = {mrkColor[1],mrkColor[2],mrkColor[3]},
     caption = "  Settings  ",
   }
 ))
