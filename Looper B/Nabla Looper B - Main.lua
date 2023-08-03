@@ -6,7 +6,7 @@
 * Author URI: https://forum.cockos.com/member.php?u=133640
 --]]
 --====================================================================== 
-local version = 'v0.2.4'
+local version = 'v0.3'
 local console = 0
 local reaper = reaper
 local proj = proj

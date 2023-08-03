@@ -77,9 +77,9 @@ local function GetSetNablaConfigs()
   }
   for i=1, #vars do
     local varName = vars[i][1] 
-    _G[varName] = reaper.GetExtState( 'NABLA_LOOPER_MANUAL', vars[i][2] )
+    _G[varName] = reaper.GetExtState( 'NABLA_LOOPER_B', vars[i][2] )
     if _G[varName] == "" or _G[varName] == nil then
-      reaper.SetExtState( 'NABLA_LOOPER_MANUAL', vars[i][2], vars[i][3], true )
+      reaper.SetExtState( 'NABLA_LOOPER_B', vars[i][2], vars[i][3], true )
       _G[varName] = vars[i][3]
     end
   end	
@@ -356,9 +356,9 @@ local function StoreItemDataDefer()
         local iEnd = iPos+lengthItem
         local _, lastMeasure, _, _, _ = reaper.TimeMap2_timeToBeats( proj, iEnd )
         tItemsData[#tItemsData+1] = {
-          a	= codeItem,
-          c	= lengthItem,
-          e	= lastMeasure-1,
+          codeItem	= codeItem,
+          lengthItem	= lengthItem,
+          lastMeasure	= lastMeasure-1,
         }
       end
     end
