@@ -108,7 +108,7 @@ local function CreateTableAllItems()
       tkIdx       = tkIdx,
       iLock       = iLock ,
       lenQN       = lenQN,
-      type        = type,
+      type        = item_type,
       mode        = mode,
     }
     ::next::
@@ -135,23 +135,26 @@ function PropagateAudio(sTkName, source, oldSoffs, oldLen )
   reaper.UpdateArrange()
 end
 
+local function cleanMIDI(v, midi_type, i)
+  local _, chunk    = reaper.GetItemStateChunk(v.codeItem, '', false)
+  local new_chunk = gsub(chunk, '<SOURCE%s+.->[\r]-[%\n]', "<SOURCE "..midi_type.."\n".."E "..string.format("%.0f", v.lenQN).." b0 7b 00".."\n>\n", 1)
+  reaper.SetItemStateChunk(v.codeItem, new_chunk, true)
+  reaper.GetSetMediaItemTakeInfo_String( v.cTake, 'P_NAME', v.tkName, true )
+end
+
 function PropagateMIDI(tkName, key)
   for i = 1, #items do
     local v = items[i]
     if v.tkName == tkName then
-      local _, chunk    = reaper.GetItemStateChunk(v.codeItem, '', false)
       if v.type == "MIDI" then
-        local new_chunk   = gsub(chunk, '<SOURCE%s+.->[\r]-[%\n]', "<SOURCE MIDI\n".."E "..v.lenQN.." b0 7b 00".."\n>\n", 1)
-        reaper.SetItemStateChunk(v.codeItem, new_chunk, true)
-        reaper.GetSetMediaItemTakeInfo_String( v.cTake, 'P_NAME', tkName, true )
+        cleanMIDI(v, "MIDI")
       elseif v.type == "MIDIPOOL" then
-        local new_chunk   = gsub(chunk, '<SOURCE%s+.->[\r]-[%\n]', "<SOURCE MIDIPOOL\n".."E "..v.lenQN.." b0 7b 00".."\n>\n", 1)
-        reaper.SetItemStateChunk(v.codeItem, new_chunk, true)
-        reaper.GetSetMediaItemTakeInfo_String( v.cTake, 'P_NAME', tkName, true )
+        cleanMIDI(v, "MIDIPOOL")
       end
-
     end
   end
+  reaper.Main_OnCommand(40047, 0)
+  reaper.UpdateArrange()
 end
 
 function GetNumForLoopTakes( cTake )
@@ -173,15 +176,22 @@ function drawMenu()
   for i = 0, 10000 do
     local retval, key, _ = reaper.EnumProjExtState( 0, sTkName, i )
     if retval == false then  break end
-    str = str.."|Delete - "..tkName.." - Take "..string.format("%d", key)
+    str = string.format("%s|Delete - %s - Take %d", str, tkName, key)
   end
 
   local retval = gfx.showmenu(str)
 
   if retval > 0 then
     local _, key, str_val = reaper.EnumProjExtState( 0, sTkName, string.format("%.0f", retval-1 ) )
+
     for substring in gmatch(str_val, '([^,]+)') do insert(tStrRec, substring) end
-    local yesno =  reaper.MB( "Delete \""..tkName.." TK:"..string.format("%.0f", key ).."\"".." and its media file: "..tStrRec[1], "Delete take and source files (no undo!)", 4 )
+
+    local warningStr = "Delete take and source files (no undo!)"
+    local messageFormat = "Delete \"%s TK:%.0f\" and its media file: %s"
+    local message = string.format(messageFormat, tkName, key, tStrRec[1])
+    
+    local yesno = reaper.MB(message, warningStr, 4)
+    
     if yesno == 6 then
 
       if tStrRec[4] == "AUDIO" then
