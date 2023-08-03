@@ -342,6 +342,18 @@ local function errorHandler(errObject)
   )
 end
 
+function printTable(t, indent)
+  indent = indent or ''
+  for key, value in pairs(t) do
+      if type(value) == "table" then
+          reaper.ShowConsoleMsg(indent .. tostring(key) .. ":\n")
+          printTable(value, indent .. '  ')
+      else
+          reaper.ShowConsoleMsg(indent .. tostring(key) .. " : " .. tostring(value) .. "\n")
+      end
+  end
+end
+
 local function StoreItemDataDefer()
   xpcall( function()
     local numItems = reaper.CountMediaItems(proj)
@@ -366,13 +378,16 @@ local function StoreItemDataDefer()
   end, errorHandler)
 end
 
+
+
 local function MainDefer()
   xpcall( function()
     for i=1, #tItemsData do
       local pPos = reaper.GetPlayPosition()
       local _, currentMeasure, _, _, _ = reaper.TimeMap2_timeToBeats( proj, pPos )
-      if currentMeasure == tItemsData[i].lengthItem then
-        tItemsData[i].lengthItem = currentMeasure+1
+      if currentMeasure == tItemsData[i].lastMeasure then
+      Msg(currentMeasure)
+        tItemsData[i].lastMeasure = currentMeasure+1
         if tItemsData[i].codeItem then
           local lengthItem = reaper.GetMediaItemInfo_Value(tItemsData[i].codeItem,"D_LENGTH")
           reaper.SetMediaItemInfo_Value(tItemsData[i].codeItem,"D_LENGTH", lengthItem+reaper.TimeMap2_beatsToTime(proj, 0, 1) )
@@ -386,14 +401,14 @@ end
 
 local function main()
   local pState = reaper.GetPlayState()
-  -- Msg("-- Manual Mode --", 1)
+  Msg("-- Manual Mode --", 1)
   if pState == 0 then
     if linkTriggers == 'true' then
       reaper.CSurf_OnRecord()
       local scriptName = "Script: Nabla Looper B - Main.lua"
       local idbyscript = GetIDByScriptName(scriptName)
       reaper.Main_OnCommand(reaper.NamedCommandLookup(idbyscript),0)
-      -- Msg("Script: Nabla Looper Manual Trigger Actions.lua ID: " .. idbyscript, 1)
+      -- Msg("Script: Nabla Looper B - Main.lua ID: " .. idbyscript, 1)
     else
       reaper.CSurf_OnPlay()
     end
@@ -411,4 +426,6 @@ if safeMode    == 'true' then xpcall(InsertReaDelay, errorHandler) end
 SetPreservePDC(preservePDC)
 xpcall(RestoreSelectedTracks, errorHandler)
 xpcall(main, errorHandler)
+-- printTable(tItemsData)
 reaper.atexit( AtExitActions )
+
