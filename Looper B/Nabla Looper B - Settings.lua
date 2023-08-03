@@ -57,9 +57,6 @@ end
 loadfile(libPathNabla .. "scythe.lua")()
 
 local GUI   = require("gui.core")
-local Frame = require("gui.elements.Frame")
-local Label = require("gui.elements.Label")
-local Table = require("public.table")
 local window
 ------------------------------------------------------------------
 --  TO BOOLEAN
@@ -131,7 +128,7 @@ end
 ------------------------------------
 window = GUI.createWindow({
   name = "Manual Mode Settings",
-  x = 0, y = 0, w = 222, h = 380,
+  x = 0, y = 0, w = 222, h = 320,
   anchor = "mouse",
   corner = "C",
 })
@@ -153,15 +150,6 @@ layer_3:addElements( GUI.createElements(
 ))
 local layer_2 = GUI.createLayer({name = "Layer_2", z = 2})
 layer_2:addElements( GUI.createElements(
-
-  {
-    name = "frm_Divider",
-    type = "Frame",
-    x = 32,
-    y = 280,
-    w = 93,
-    h = 24,
-  },
   {
     name = "lab_header",
     type = "Label",
@@ -171,9 +159,8 @@ layer_2:addElements( GUI.createElements(
     h = 20,
     font = 2,
     --color = {mrkColor[1],mrkColor[2],mrkColor[3]},
-    caption = "  Options  ",
+    caption = "  Settings  ",
   }
-
 ))
 
 local layer = GUI.createLayer({name = "Layer_1", z = 1})
@@ -214,41 +201,9 @@ layer:addElements( GUI.createElements(
     output = "%val% s",
   },
   {
-    name = "label_shortcut",
-    type = "Label",
-    x = 42, 
-    y = 260, 
-    --w = 24, 
-    h = 24,
-    font = 3,
-    --color = {mrkColor[1],mrkColor[2],mrkColor[3]},
-    caption = "Actual Keyboard Shortcut:",
-  }, 
-  {
-    name = "label_val",
-    type = "Label",
-    x = 38,
-    y = 284,
-    w = 90,
-    h = 20,
-    font = 3,
-    --color = {mrkColor[1],mrkColor[2],mrkColor[3]},
-    caption = " "..hotkeyName,
-  },
-  {
-    name = "btn_hotkey",
-    type = "Button",
-    x = 130, y = 282, 
-    w = 60, 
-    h = 20,
-    caption = 'Change',
-    func = getHotkey,
-  },
-
-  {
     name = "btn_go",
     type = "Button",
-    x = 81, y = 324, 
+    x = 81, y = 260, 
     w = 64, h = 24,
     caption = 'Save',
     textColor = 'textMenu',
