@@ -227,4 +227,4 @@ for i = 0, 1000 do
 	str = str.."|"..tkName.." - Take "..string.format("%d", key )
 end
 
-drawMenu(x,y,str)  
+drawMenu(x,y,str)

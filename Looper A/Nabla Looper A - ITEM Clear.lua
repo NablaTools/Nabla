@@ -12,14 +12,14 @@ local proj = proj
 local reaper = reaper
 
 function Msg(value, line)
-	if console == 1 then
-		reaper.ShowConsoleMsg(tostring(value))
-		if line == 0 then
-			reaper.ShowConsoleMsg("\n")
-		else
-			reaper.ShowConsoleMsg("\n-----\n")
-		end
-	end
+  if console == 1 then
+    reaper.ShowConsoleMsg(tostring(value))
+    if line == 0 then
+      reaper.ShowConsoleMsg("\n")
+    else
+      reaper.ShowConsoleMsg("\n-----\n")
+    end
+  end
 end
 
 local info   = debug.getinfo(1,'S');
@@ -38,33 +38,33 @@ local items_table    = {}
 local rec_items_table = {}
 
 local function GetItemType( item, getsectiontype ) -- MediaItem* item, boolean* getsectiontype
-	local take   = reaper.GetActiveTake(item)
-	if not take then return false, "UNKNOW" end
-	local source = reaper.GetMediaItemTake_Source(take)
-	local item_type   = reaper.GetMediaSourceType(source, "")
-	if item_type ~= "SECTION" then
-		return false, item_type
-	else
-		if not getsectiontype then
-			return true, 'SECTION'
-		else
-			local _, chunk = reaper.GetItemStateChunk(item, "", false)
-			for sectionType in  gmatch(chunk, '<SOURCE%s+(.-)[\r]-[%\n]') do
-				if sectionType ~= "SECTION" then
-					return true, sectionType
-				end
-			end
-		end
-	end
+  local take   = reaper.GetActiveTake(item)
+  if not take then return false, "UNKNOW" end
+  local source = reaper.GetMediaItemTake_Source(take)
+  local item_type   = reaper.GetMediaSourceType(source, "")
+  if item_type ~= "SECTION" then
+    return false, item_type
+  else
+    if not getsectiontype then
+      return true, 'SECTION'
+    else
+      local _, chunk = reaper.GetItemStateChunk(item, "", false)
+      for sectionType in  gmatch(chunk, '<SOURCE%s+(.-)[\r]-[%\n]') do
+        if sectionType ~= "SECTION" then
+          return true, sectionType
+        end
+      end
+    end
+  end
 end
 
 local function GetItemAction(code_item)
-	local r, item_action = reaper.GetSetMediaItemInfo_String(code_item, 'P_EXT:ITEM_ACTION', '', false)
-	if r then
-		return item_action
-	else
-		return ""
-	end
+  local r, item_action = reaper.GetSetMediaItemInfo_String(code_item, 'P_EXT:ITEM_ACTION', '', false)
+  if r then
+    return item_action
+  else
+    return ""
+  end
 end
 
 local function CheckIfItemTypeIsAudioOrMIDI(item_type)
@@ -102,35 +102,35 @@ local function CreateTableAllItems()
             item_type  = item_type,
             item_mode  = item_mode,
         }
-        if action == '1' or action == '2' then
+        if action == 'record' or action == 'record mute' then
             rec_items_table[#rec_items_table+1] = {  take_name = take_name, iLen = iLen, lengthQN = lengthQN }
         end
         ::next::
-	end
+  end
 end
 
 function CleanUp()
-	reaper.Main_OnCommand(reaper.NamedCommandLookup('_SWS_RESTORETRACK'), 0)
+  reaper.Main_OnCommand(reaper.NamedCommandLookup('_SWS_RESTORETRACK'), 0)
 end
 
 function ErrorHandler(errObject)
-	local byLine = "([^\r\n]*)\r?\n?"
-	local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
-	local err = errObject   and string.match(errObject, trimPath) or  "Couldn't get error message."
-	local trace = debug.traceback()
-	local stack = {}
-	for line in string.gmatch(trace, byLine) do
-		local str = string.match(line, trimPath) or line
-		stack[#stack + 1] = str
-	end
-	table.remove(stack, 1)
-	reaper.ShowConsoleMsg(
-		"Error: "..err.."\n\n"..
-		"Stack traceback:\n\t"..table.concat(stack, "\n\t", 2).."\n\n"..
-		"Nabla:      \t".. version .."\n"..
-		"Reaper:      \t"..reaper.GetAppVersion().."\n"..
-		"Platform:    \t"..reaper.GetOS()
-	)
+  local byLine = "([^\r\n]*)\r?\n?"
+  local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
+  local err = errObject   and string.match(errObject, trimPath) or  "Couldn't get error message."
+  local trace = debug.traceback()
+  local stack = {}
+  for line in string.gmatch(trace, byLine) do
+    local str = string.match(line, trimPath) or line
+    stack[#stack + 1] = str
+  end
+  table.remove(stack, 1)
+  reaper.ShowConsoleMsg(
+    "Error: "..err.."\n\n"..
+    "Stack traceback:\n\t"..table.concat(stack, "\n\t", 2).."\n\n"..
+    "Nabla:      \t".. version .."\n"..
+    "Reaper:      \t"..reaper.GetAppVersion().."\n"..
+    "Platform:    \t"..reaper.GetOS()
+  )
 end
 
 local function cleanMIDI(v, midi_type, i)
@@ -155,6 +155,7 @@ function Main()
                 if rec_items_table[i].take_name == v.take_name then
                     flags[v.code_item] = true
                     if v.item_lock ~= 1 then
+                        Msg(v.item_type)
                         if v.item_type == "MIDIPOOL" then
                             cleanMIDI(v, "MIDIPOOL", i)
                         elseif v.item_type == "MIDI" then
