@@ -612,7 +612,10 @@ local function errorHandler(errObject)
 end
 
 local function SetReaDelayTime(code_track, item_length)
-  reaper.TrackFX_SetParam( code_track, reaper.TrackFX_AddByName( code_track, 'Nabla ReaDelay', false, 0 ), 4, (reaper.TimeMap_timeToQN_abs( 0, item_length )*2)/256 )
+  local fxIndex = reaper.TrackFX_AddByName(code_track, 'Nabla ReaDelay', false, 0)
+  local qnLength = reaper.TimeMap_timeToQN_abs(0, item_length)
+  local delayParameter = (qnLength * 2) / 256
+  reaper.TrackFX_SetParam(code_track, fxIndex, 4, delayParameter)
 end
 
 -- local function OnReaDelay(code_track)
@@ -620,23 +623,33 @@ end
 -- end
 
 local function OffReaDelayDefer(str_item_end_position, redItemEnd)
-  xpcall( function()
+  xpcall(function()
     if str_item_end_position then
       newsiEnd = str_item_end_position
       sredItemEnd = redItemEnd
     end
-    if reaper.GetPlayPosition() > sredItemEnd then
-      for i = 1, #_G[ newsiEnd ] do
+
+    local playPosition = reaper.GetPlayPosition()
+
+    if playPosition > sredItemEnd then
+      for i = 1, #_G[newsiEnd] do
         reaper.Undo_BeginBlock()
-        local v = items_table[ _G[newsiEnd][i].item_index ]
+        local v = items_table[_G[newsiEnd][i].item_index]
+
         if v.buffer == 1 then
-          reaper.TrackFX_SetParam( v.code_track, reaper.TrackFX_AddByName( v.code_track, 'Nabla ReaDelay', false, 0 ), 13, 0 )
+          local fxIndex = reaper.TrackFX_AddByName(v.code_track, 'Nabla ReaDelay', false, 0)
+          reaper.TrackFX_SetParam(v.code_track, fxIndex, 13, 0)
         end
+
         reaper.Undo_EndBlock("End Buffer: " .. v.take_name, -1)
       end
+
       return
     end
-    if reaper.GetPlayState() == 0 then return else reaper.defer(OffReaDelayDefer) end
+
+    if reaper.GetPlayState() ~= 0 then
+      reaper.defer(OffReaDelayDefer)
+    end
   end, errorHandler)
 end
 
@@ -657,7 +670,8 @@ local function CreateNewSourceForItem(v, section, take_name, take_index)
 end
 
 local function PropagateAudio(variable_take_name, section, take_name, take_index)
-  for i = 1, #_G[variable_take_name] do
+  if not #_G[variable_take_name] then return end
+  local function setProperties(i)
     local v = items_table[ _G[variable_take_name][i].item_index ]
     if v.item_lock ~= 1 then
       CreateNewSourceForItem(v, section, take_name, take_index)
@@ -665,11 +679,16 @@ local function PropagateAudio(variable_take_name, section, take_name, take_index
       if v.source then reaper.PCM_Source_Destroy(v.source) end
     end
   end
+  for i = 2, #_G[variable_take_name] do
+    setProperties(i)
+  end
+  setProperties(1)
   reaper.Main_OnCommand(40047, 0) -- Peaks: Build any missing peaks
 end
 
 local function PropagateMIDI(variable_take_name, section, newidx)
-  for i = 1, #_G[variable_take_name] do
+  if not #_G[variable_take_name] then return end
+  local function setProperties(i)
     local v = items_table[ _G[variable_take_name][i].item_index ]
     local pcm_section = reaper.PCM_Source_CreateFromType("MIDI")
     reaper.SetMediaItemTake_Source(v.code_take, pcm_section)
@@ -679,6 +698,11 @@ local function PropagateMIDI(variable_take_name, section, newidx)
     reaper.GetSetMediaItemTakeInfo_String(v.code_take, 'P_NAME', v.take_name.." TK:"..format("%d", newidx), true )
     if v.source then reaper.PCM_Source_Destroy(v.source) end
   end
+
+  for i = 2, #_G[variable_take_name] do
+    setProperties(i)
+  end
+  setProperties(1)
 end
 
 local function WaitForEnd()
